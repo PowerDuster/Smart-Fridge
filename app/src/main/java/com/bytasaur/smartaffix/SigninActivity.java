@@ -1,23 +1,20 @@
 package com.bytasaur.smartaffix;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.PhoneAuthCredential;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
@@ -109,7 +106,7 @@ public class SigninActivity extends AppCompatActivity {
             return;
         }
         auth.signOut();
-        //auth.createUserWithEmailAndPassword(emailBox.getText().toString(), pwdBox.getText().toString())
+        disableBoxes();
         auth.signInWithEmailAndPassword(emailBox.getText().toString(), pwdBox.getText().toString()).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
@@ -118,12 +115,14 @@ public class SigninActivity extends AppCompatActivity {
                         goToMain();
                     }
                     else {
-                        auth.signOut();
                         Toast.makeText(getApplicationContext(), "Email not verified!", Toast.LENGTH_LONG).show();
+                        auth.signOut();
+                        enableBoxes();
                     }
                 }
                 else {
                     Toast.makeText(getApplicationContext(), task.getException().getLocalizedMessage(), Toast.LENGTH_LONG).show();
+                    enableBoxes();
                 }
             }
         });
@@ -146,9 +145,11 @@ public class SigninActivity extends AppCompatActivity {
             return;
         }
         auth.signOut();
+        disableBoxes();
         auth.createUserWithEmailAndPassword(emailBox.getText().toString(), pwdBox.getText().toString()).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
+                enableBoxes();
                 if(task.isSuccessful()) {
                     auth.getCurrentUser().sendEmailVerification().addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
@@ -164,4 +165,22 @@ public class SigninActivity extends AppCompatActivity {
             }
         });
     }
+
+    private void enableBoxes() {
+        emailBox.setEnabled(true);
+        pwdBox.setEnabled(true);
+        idBox.setEnabled(true);
+    }
+
+    private void disableBoxes() {
+        emailBox.setEnabled(false);
+        pwdBox.setEnabled(false);
+        idBox.setEnabled(false);
+    }
+
+//    private void setBoxes(boolean enable) {   // Using seperate functions for potential(maybe?) compiler optimisation
+//        emailBox.setEnabled(enable);
+//        pwdBox.setEnabled(enable);
+//        idBox.setEnabled(enable);
+//    }
 }
