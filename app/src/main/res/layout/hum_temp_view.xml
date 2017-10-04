@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:padding="12dp"
+    android:layout_marginTop="-24dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <View
+        android:id="@+id/line"
+        android:background="#666"
+        android:rotation="-45"
+        android:layout_centerInParent="true"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"/>
+
+    <TextView
+        android:id="@+id/temp_view"
+        android:layout_above="@id/line"
+        android:layout_width="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="36dp"
+        android:ems="3"
+        android:layout_marginBottom="36dp"
+        android:layout_height="wrap_content"
+        android:text="@string/default_temp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Display3"
+        android:textColor="@color/colorPrimaryDark" />
+
+    <TextView
+        android:id="@+id/humid_view"
+        android:layout_below="@id/line"
+        android:layout_width="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="36dp"
+        android:layout_marginTop="36dp"
+        android:layout_height="wrap_content"
+        android:text="@string/default_humid"
+        android:textAppearance="@style/TextAppearance.AppCompat.Display3"
+        android:textColor="@color/colorPrimaryDark" />
+
+</RelativeLayout>
