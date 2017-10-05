@@ -27,7 +27,7 @@ public class SigninActivity extends AppCompatActivity {
     private EditText emailBox;
     private EditText pwdBox;
     private String deviceId;
-    private Task<AuthResult> task;
+//    private Task<AuthResult> task;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,9 +64,7 @@ public class SigninActivity extends AppCompatActivity {
     }
 
     private void goToMain() {
-        emailBox.setEnabled(false);
-        pwdBox.setEnabled(false);
-        idBox.setEnabled(false);
+        disableBoxes();
         FirebaseDatabase.getInstance().getReference(deviceId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -78,14 +76,13 @@ public class SigninActivity extends AppCompatActivity {
                 else {
                     auth.signOut();
                     Toast.makeText(getApplicationContext(), deviceId+" not found", Toast.LENGTH_LONG).show();
-                    emailBox.setEnabled(true);
-                    pwdBox.setEnabled(true);
-                    idBox.setEnabled(true);
+                    enableBoxes();
                 }
             }
             @Override
             public void onCancelled(DatabaseError databaseError) {
-                //
+                Toast.makeText(getApplicationContext(), databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+                enableBoxes();
             }
         });
     }

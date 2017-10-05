@@ -27,18 +27,4 @@ public class StateListFragment extends android.support.v4.app.Fragment {
         gridView.setAdapter(MainActivity.adapter);
         return v;
     }
-
-    static class FridgeItem {
-        String name;
-        int n;
-        int resId;
-        public FridgeItem(String name, int n) {
-            this(name, n, R.id.cast_notification_id);
-        }
-        FridgeItem(String name, int n, int resId) {
-            this.name=name;
-            this.n=n;
-            this.resId=resId;
-        }
-    }
 }

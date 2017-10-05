@@ -63,9 +63,11 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
             }
             Integer i = imageResIds.get(tmp);
             if (i == null) {
-                i = R.drawable.def;
+                adapter.add(new FridgeItem(tmp, dataSnapshot.getValue(Integer.class), R.drawable.def));
             }
-            adapter.add(new FridgeItem(tmp, dataSnapshot.getValue(Integer.class), i));
+            else {
+                adapter.add(new FridgeItem(tmp, dataSnapshot.getValue(Integer.class), i));
+            }
             adapter.notifyDataSetChanged();
         }
 
@@ -279,9 +281,6 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
         String name;
         int count;
         int resId;
-        public FridgeItem(String name, int count) {
-            this(name, count, R.id.cast_notification_id);
-        }
         FridgeItem(String name, int count, int resId) {
             this.name=name;
             this.count = count;
