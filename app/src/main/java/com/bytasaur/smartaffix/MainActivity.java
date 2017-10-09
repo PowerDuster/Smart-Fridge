@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
                 return;
             }
             Integer i = imageResIds.get(tmp);
-            if (i == null) {
+            if (i == null) {    // getValue may return null
                 adapter.add(new FridgeItem(tmp, dataSnapshot.getValue(Integer.class), R.drawable.def));
             }
             else {
@@ -277,6 +277,7 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
             return titles[position];
         }
     }
+
     private static class FridgeItem {
         String name;
         int count;

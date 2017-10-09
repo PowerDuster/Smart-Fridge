@@ -23,6 +23,13 @@
         android:ems="10"
         android:inputType="textEmailAddress" />
 
+    <ProgressBar
+        android:id="@+id/loadingSpinner"
+        android:layout_centerHorizontal="true"
+        android:layout_alignBaseline="@id/email_box"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
     <EditText
         android:id="@+id/pwd_box"
         android:hint="Password"
@@ -53,7 +60,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="48dp"
-        android:onClick="register"
+        android:onClick="registerClicked"
         android:text="register" />
 
 

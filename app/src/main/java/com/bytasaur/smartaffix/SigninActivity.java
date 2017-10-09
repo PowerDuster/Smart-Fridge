@@ -1,12 +1,17 @@
 package com.bytasaur.smartaffix;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -27,6 +32,7 @@ public class SigninActivity extends AppCompatActivity {
     private EditText emailBox;
     private EditText pwdBox;
     private String deviceId;
+    private ProgressBar spinner;
 //    private Task<AuthResult> task;
 
     @Override
@@ -34,12 +40,16 @@ public class SigninActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signin);
 
+        spinner=(ProgressBar)findViewById(R.id.loadingSpinner);
+        spinner.setWillNotDraw(true);
+
         auth=FirebaseAuth.getInstance();
         FirebaseUser tmp=auth.getCurrentUser();
         deviceId=getPreferences(0).getString("d_id", null);
         idBox =(EditText)findViewById(R.id.id_box);
         emailBox =(EditText)findViewById(R.id.email_box);
         pwdBox =(EditText)findViewById(R.id.pwd_box);
+
         if(tmp!=null) {
             if(deviceId!=null) {
                 if(tmp.isEmailVerified()) {
@@ -125,25 +135,54 @@ public class SigninActivity extends AppCompatActivity {
         });
     }
 
-    // COPY-PASTED TO REDUCE EXTRA CALL!!
-    public void register(View v) {
+
+    public void registerClicked(View v) {
+        // CHECK IF COMPILER WOULD INLINE IT AND MAKE A FUNCTION!!
         if(TextUtils.isEmpty(idBox.getText().toString())) {
             idBox.setError("* Required");
             return;
         }
         deviceId=idBox.getText().toString();
         getPreferences(0).edit().putString("d_id", deviceId).apply();
-        if(TextUtils.isEmpty(emailBox.getText().toString())) {
+        final String email=emailBox.getText().toString();
+        if(TextUtils.isEmpty(email)) {
             emailBox.setError("* Required");
             return;
         }
-        if(TextUtils.isEmpty(pwdBox.getText().toString())) {
+        final String passwd=pwdBox.getText().toString();
+        if(TextUtils.isEmpty(passwd)) {
             pwdBox.setError("* Required");
             return;
         }
+        final EditText confirmBox=new EditText(this);
+        confirmBox.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+
+        final AlertDialog alertDialog=new AlertDialog.Builder(this).setTitle("Register").setView(confirmBox)
+                .setPositiveButton("Confirm", null).setNegativeButton("Cancel", null).create();
+        alertDialog.show(); // Slight chance of completing show before ClickListener is overridden, don't matter
+        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String dialText=confirmBox.getText().toString();
+                if(TextUtils.isEmpty(dialText)) {
+                    confirmBox.setError("* Required");
+                }
+                else if(dialText.equals(passwd)) {
+                    register(email, passwd);
+                    alertDialog.dismiss();
+                }
+                else {
+                    confirmBox.setError("* Passwords don't match");
+                }
+            }
+        });
+    }
+
+
+    private void register(String email, String passwd) {
         auth.signOut();
         disableBoxes();
-        auth.createUserWithEmailAndPassword(emailBox.getText().toString(), pwdBox.getText().toString()).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+        auth.createUserWithEmailAndPassword(email, passwd).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 enableBoxes();
@@ -164,12 +203,14 @@ public class SigninActivity extends AppCompatActivity {
     }
 
     private void enableBoxes() {
+        spinner.setWillNotDraw(true);
         emailBox.setEnabled(true);
         pwdBox.setEnabled(true);
         idBox.setEnabled(true);
     }
 
     private void disableBoxes() {
+        spinner.setWillNotDraw(false);
         emailBox.setEnabled(false);
         pwdBox.setEnabled(false);
         idBox.setEnabled(false);
