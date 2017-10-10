@@ -1,8 +1,8 @@
 package com.bytasaur.smartaffix;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -11,7 +11,6 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -22,6 +21,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
@@ -33,7 +33,39 @@ public class SigninActivity extends AppCompatActivity {
     private EditText pwdBox;
     private String deviceId;
     private ProgressBar spinner;
-//    private Task<AuthResult> task;
+    private DatabaseReference reference;
+    private Handler handler=new Handler();
+    private Runnable runnable=new Runnable() {
+        @Override
+        public void run() {
+            reference.removeEventListener(checkId);
+            enableBoxes();
+            Toast.makeText(getApplicationContext(), "Timed Out!", Toast.LENGTH_SHORT).show();
+            handler.removeCallbacks(runnable);
+        }
+    };
+    private ValueEventListener checkId=new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+            if(dataSnapshot.exists()) {
+                Toast.makeText(getApplicationContext(), "Signed in to "+deviceId, Toast.LENGTH_SHORT).show();
+                handler.removeCallbacks(runnable);
+                startActivity(new Intent(getApplicationContext(), MainActivity.class).putExtra("devid", deviceId));
+                finish();
+            }
+            else {
+                auth.signOut();
+                Toast.makeText(getApplicationContext(), deviceId+" not found", Toast.LENGTH_LONG).show();
+                enableBoxes();
+            }
+        }
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+//                Toast.makeText(getApplicationContext(), databaseError.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "Cancelled!", Toast.LENGTH_SHORT).show();
+            enableBoxes();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +88,6 @@ public class SigninActivity extends AppCompatActivity {
                     emailBox.setText(tmp.getEmail());
                     idBox.setText(deviceId);
                     goToMain();
-                    Toast.makeText(getApplicationContext(), "Checking connection with "+deviceId+"...", Toast.LENGTH_SHORT).show();
                 }
                 else {
                     auth.signOut();
@@ -75,26 +106,10 @@ public class SigninActivity extends AppCompatActivity {
 
     private void goToMain() {
         disableBoxes();
-        FirebaseDatabase.getInstance().getReference(deviceId).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()) {
-                    Toast.makeText(getApplicationContext(), "Signed in to "+deviceId, Toast.LENGTH_SHORT).show();
-                    startActivity(new Intent(getApplicationContext(), MainActivity.class).putExtra("devid", deviceId));
-                    finish();
-                }
-                else {
-                    auth.signOut();
-                    Toast.makeText(getApplicationContext(), deviceId+" not found", Toast.LENGTH_LONG).show();
-                    enableBoxes();
-                }
-            }
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                Toast.makeText(getApplicationContext(), databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-                enableBoxes();
-            }
-        });
+        Toast.makeText(getApplicationContext(), "Checking connection with "+deviceId+"...", Toast.LENGTH_SHORT).show(); // Considering replacing Toasts with Snackbars
+        reference=FirebaseDatabase.getInstance().getReference(deviceId);
+        reference.addListenerForSingleValueEvent(checkId);
+        handler.postDelayed(runnable, 13000);
     }
 
     public void signIn(View v) {
