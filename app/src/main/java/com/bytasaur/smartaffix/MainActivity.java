@@ -291,7 +291,7 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
                         return;
                     }
                     String tmp2=new2Box.getText().toString();
-                    if(TextUtils.isEmpty(tmp)) {
+                    if(TextUtils.isEmpty(tmp2)) {
                         new2Box.setError("* Required");
                         return;
                     }
