@@ -38,4 +38,27 @@
         android:textAppearance="@style/TextAppearance.AppCompat.Display3"
         android:textColor="@color/colorPrimaryDark" />
 
+    <LinearLayout
+        android:id="@+id/state"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <TextView
+            android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+            android:layout_marginEnd="-10dp"
+            android:text="Lid: "
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/door_state_view"
+            android:ems="3"
+            android:textAppearance="@style/TextAppearance.AppCompat.Display1"
+            android:textColor="#000"
+            android:textAlignment="center"
+            android:text="@string/default_lid"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
 </RelativeLayout>

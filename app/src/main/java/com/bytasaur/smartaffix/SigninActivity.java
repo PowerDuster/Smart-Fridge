@@ -6,7 +6,6 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.text.InputType;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
@@ -169,20 +168,25 @@ public class SigninActivity extends AppCompatActivity {
             pwdBox.setError("* Required");
             return;
         }
-        final EditText confirmBox=new EditText(this);
-        confirmBox.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
 
-        final AlertDialog alertDialog=new AlertDialog.Builder(this).setTitle("Register").setView(confirmBox)
+        final AlertDialog alertDialog=new AlertDialog.Builder(this).setTitle("Register").setView(R.layout.registration_dialog)
                 .setPositiveButton("Confirm", null).setNegativeButton("Cancel", null).create();
         alertDialog.show(); // Slight chance of completing show before ClickListener is overridden, don't matter
+        final EditText confirmBox=(EditText) alertDialog.getWindow().findViewById(R.id.pwd_confirm);
+        final EditText phoneBox=(EditText)alertDialog.getWindow().findViewById(R.id.phone_box);
         alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 String dialText=confirmBox.getText().toString();
                 if(TextUtils.isEmpty(dialText)) {
                     confirmBox.setError("* Required");
+                    return;
                 }
-                else if(dialText.equals(passwd)) {
+                if(TextUtils.isEmpty(phoneBox.getText().toString())) {
+                    phoneBox.setError("* Required");
+                    return;
+                }
+                if(dialText.equals(passwd)) {
                     register(email, passwd);
                     alertDialog.dismiss();
                 }
@@ -231,7 +235,7 @@ public class SigninActivity extends AppCompatActivity {
         idBox.setEnabled(false);
     }
 
-//    private void setBoxes(boolean enable) {   // Using seperate functions for potential(maybe?) compiler optimisation
+//    private void setBoxes(boolean enable) {   // Using seperate functions instead for potential(maybe?) compiler optimisation(inlining)
 //        emailBox.setEnabled(enable);
 //        pwdBox.setEnabled(enable);
 //        idBox.setEnabled(enable);
