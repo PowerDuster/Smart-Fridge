@@ -19,4 +19,6 @@ public class MonitorFragment extends android.support.v4.app.Fragment {
         humidityView=(TextView)v.findViewById(R.id.humid_view);
         return v;
     }
+
+
 }

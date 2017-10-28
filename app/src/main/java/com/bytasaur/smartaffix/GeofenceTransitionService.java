@@ -1,5 +1,6 @@
 package com.bytasaur.smartaffix;
 
+import android.app.ActivityManager;
 import android.app.IntentService;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -31,12 +32,17 @@ public class GeofenceTransitionService extends IntentService {
             return;
         }
         if(event.getGeofenceTransition()==Geofence.GEOFENCE_TRANSITION_ENTER) {
-            TaskStackBuilder stackBuilder=TaskStackBuilder.create(this);
-            stackBuilder.addParentStack(SigninActivity.class);
-            stackBuilder.addNextIntent(new Intent(this, SigninActivity.class));
+//            TaskStackBuilder stackBuilder=TaskStackBuilder.create(this);
+//            stackBuilder.addParentStack(SigninActivity.class);
+            final Intent notificationIntent=new Intent(this, MainActivity.class);
+            notificationIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+            notificationIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+//            stackBuilder.addNextIntent(new Intent(this, MainActivity.class).setAction(Intent.ACTION_MAIN)
+//                    .addCategory(Intent.CATEGORY_LAUNCHER).addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT|Intent.FLAG_ACTIVITY_SINGLE_TOP));
             NotificationCompat.Builder notificationBuilder=new NotificationCompat.Builder(this).setSmallIcon(R.drawable.common_full_open_on_phone)
                     .setContentTitle(getString(R.string.app_name)).setContentText(event.getTriggeringGeofences().get(0).getRequestId())
-                    .setContentIntent(stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)).setAutoCancel(true).setVibrate(new long[]{400, 100, 30, 100});
+                    .setContentIntent(PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT)).setAutoCancel(true).setVibrate(new long[]{400, 100, 30, 100});
 
             NotificationManager notificationManager=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);
             notificationManager.notify(0, notificationBuilder.build());

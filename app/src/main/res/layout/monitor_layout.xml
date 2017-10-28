@@ -7,6 +7,7 @@
 
     <View
         android:id="@+id/line"
+        android:translationY="-20dp"
         android:background="#666"
         android:rotation="-45"
         android:layout_centerInParent="true"
@@ -15,6 +16,7 @@
 
     <TextView
         android:id="@+id/temp_view"
+        android:translationY="-20dp"
         android:layout_above="@id/line"
         android:layout_width="wrap_content"
         android:layout_alignParentStart="true"
@@ -26,8 +28,17 @@
         android:textAppearance="@style/TextAppearance.AppCompat.Display3"
         android:textColor="@color/colorPrimaryDark" />
 
+    <ImageView
+        android:src="@drawable/thermometer"
+        android:layout_alignBaseline="@id/temp_view"
+        android:translationY="-60dp"
+        android:translationX="-6dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp" />
+
     <TextView
         android:id="@+id/humid_view"
+        android:translationY="-20dp"
         android:layout_below="@id/line"
         android:layout_width="wrap_content"
         android:layout_alignParentEnd="true"
@@ -37,6 +48,15 @@
         android:text="@string/default_humid"
         android:textAppearance="@style/TextAppearance.AppCompat.Display3"
         android:textColor="@color/colorPrimaryDark" />
+
+    <ImageView
+        android:src="@drawable/humidity"
+        android:layout_alignBaseline="@id/humid_view"
+        android:layout_alignParentEnd="true"
+        android:translationY="-60dp"
+        android:translationX="6dp"
+        android:layout_width="40dp"
+        android:layout_height="40dp" />
 
     <LinearLayout
         android:id="@+id/state"

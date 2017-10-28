@@ -7,29 +7,37 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.FirebaseException;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.PhoneAuthCredential;
+import com.google.firebase.auth.PhoneAuthProvider;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.concurrent.TimeUnit;
+
 public class SigninActivity extends AppCompatActivity {
 
     private FirebaseAuth auth;
     private EditText idBox;
-    private EditText emailBox;
-    private EditText pwdBox;
+    private EditText phoneBox;
+    private Button verify;
     private String deviceId;
     private ProgressBar spinner;
     private DatabaseReference reference;
@@ -49,22 +57,26 @@ public class SigninActivity extends AppCompatActivity {
             if(dataSnapshot.exists()) {
                 Toast.makeText(getApplicationContext(), "Signed in to "+deviceId, Toast.LENGTH_SHORT).show();
                 handler.removeCallbacks(runnable);
-                startActivity(new Intent(getApplicationContext(), MainActivity.class).putExtra("devid", deviceId));
+                MainActivity.device=deviceId;
+                startActivity(new Intent(getApplicationContext(), MainActivity.class));
                 finish();
             }
             else {
                 auth.signOut();
                 Toast.makeText(getApplicationContext(), deviceId+" not found", Toast.LENGTH_LONG).show();
+                handler.removeCallbacks(runnable);
                 enableBoxes();
             }
         }
         @Override
         public void onCancelled(DatabaseError databaseError) {
 //                Toast.makeText(getApplicationContext(), databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-            Toast.makeText(getApplicationContext(), "Cancelled!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "Database Error", Toast.LENGTH_SHORT).show();
+            handler.removeCallbacks(runnable);
             enableBoxes();
         }
     };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,165 +90,138 @@ public class SigninActivity extends AppCompatActivity {
         FirebaseUser tmp=auth.getCurrentUser();
         deviceId=getPreferences(0).getString("d_id", null);
         idBox =(EditText)findViewById(R.id.id_box);
-        emailBox =(EditText)findViewById(R.id.email_box);
-        pwdBox =(EditText)findViewById(R.id.pwd_box);
+        phoneBox =(EditText)findViewById(R.id.phone_box);
+        phoneBox.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+                if(i==EditorInfo.IME_ACTION_DONE) {
+                    verify(phoneBox);
+                    return true;
+                }
+                return false;
+            }
+        });
+        verify=(Button)findViewById(R.id.btn_verify);
 
         if(tmp!=null) {
             if(deviceId!=null) {
-                if(tmp.isEmailVerified()) {
-                    emailBox.setText(tmp.getEmail());
-                    idBox.setText(deviceId);
-                    goToMain();
-                }
-                else {
-                    auth.signOut();
-                    Toast.makeText(getApplicationContext(), "Email not verified!", Toast.LENGTH_LONG).show();
-                }
+                idBox.setText(deviceId);
+                disableBoxes();
+                goToMain();
             }
             else {
                 auth.signOut();
-                emailBox.setText(tmp.getEmail());
+                phoneBox.setText(tmp.getPhoneNumber());
             }
         }
-        else if(deviceId!=null) {
-            idBox.setText(deviceId);
+        else {
+            if(deviceId!=null) {
+                idBox.setText(deviceId);
+            }
+            String p=getPreferences(0).getString("p_id", null);
+            if(p!=null) {
+                phoneBox.setText(p);
+            }
         }
     }
 
     private void goToMain() {
-        disableBoxes();
         Toast.makeText(getApplicationContext(), "Checking connection with "+deviceId+"...", Toast.LENGTH_SHORT).show(); // Considering replacing Toasts with Snackbars
         reference=FirebaseDatabase.getInstance().getReference(deviceId);
         reference.addListenerForSingleValueEvent(checkId);
         handler.postDelayed(runnable, 13000);
     }
 
-    public void signIn(View v) {
-        if(TextUtils.isEmpty(idBox.getText().toString())) {
-            idBox.setError("* Required");
-            return;
-        }
-        deviceId=idBox.getText().toString();
-        getPreferences(0).edit().putString("d_id", deviceId).apply();
-        if(TextUtils.isEmpty(emailBox.getText().toString())) {
-            emailBox.setError("* Required");
-            return;
-        }
-        if(TextUtils.isEmpty(pwdBox.getText().toString())) {
-            pwdBox.setError("* Required");
-            return;
-        }
-        auth.signOut();
+    private void signIn(PhoneAuthCredential credential) {
         disableBoxes();
-        auth.signInWithEmailAndPassword(emailBox.getText().toString(), pwdBox.getText().toString()).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+        FirebaseAuth.getInstance().signInWithCredential(credential).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if(task.isSuccessful()) {
-                    if(auth.getCurrentUser().isEmailVerified()) {
-                        goToMain();
-                    }
-                    else {
-                        Toast.makeText(getApplicationContext(), "Email not verified!", Toast.LENGTH_LONG).show();
-                        auth.signOut();
-                        enableBoxes();
-                    }
+                    //Toast.makeText(getApplicationContext(), FirebaseAuth.getInstance().getCurrentUser().getPhoneNumber(), Toast.LENGTH_LONG).show();
+                    goToMain();
                 }
                 else {
-                    Toast.makeText(getApplicationContext(), task.getException().getLocalizedMessage(), Toast.LENGTH_LONG).show();
                     enableBoxes();
+                    Toast.makeText(getApplicationContext(), task.getException().getLocalizedMessage(), Toast.LENGTH_LONG).show();
                 }
             }
         });
     }
 
-
-    public void registerClicked(View v) {
-        // CHECK IF COMPILER WOULD INLINE IT AND MAKE A FUNCTION!!
+    public void verify(final View v) {
+        disableBoxes();
         if(TextUtils.isEmpty(idBox.getText().toString())) {
             idBox.setError("* Required");
             return;
         }
         deviceId=idBox.getText().toString();
         getPreferences(0).edit().putString("d_id", deviceId).apply();
-        final String email=emailBox.getText().toString();
-        if(TextUtils.isEmpty(email)) {
-            emailBox.setError("* Required");
+        String phone=phoneBox.getText().toString();
+        if(TextUtils.isEmpty(phone)) {
+            phoneBox.setError("* Required");
             return;
         }
-        final String passwd=pwdBox.getText().toString();
-        if(TextUtils.isEmpty(passwd)) {
-            pwdBox.setError("* Required");
-            return;
-        }
-
-        final AlertDialog alertDialog=new AlertDialog.Builder(this).setTitle("Register").setView(R.layout.registration_dialog)
-                .setPositiveButton("Confirm", null).setNegativeButton("Cancel", null).create();
-        alertDialog.show(); // Slight chance of completing show before ClickListener is overridden, don't matter
-        final EditText confirmBox=(EditText) alertDialog.getWindow().findViewById(R.id.pwd_confirm);
-        final EditText phoneBox=(EditText)alertDialog.getWindow().findViewById(R.id.phone_box);
-        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+        getPreferences(0).edit().putString("p_id", phone).apply();
+        PhoneAuthProvider.getInstance().verifyPhoneNumber(phone, 60, TimeUnit.SECONDS, this, new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
+            AlertDialog alertDialog;
             @Override
-            public void onClick(View view) {
-                String dialText=confirmBox.getText().toString();
-                if(TextUtils.isEmpty(dialText)) {
-                    confirmBox.setError("* Required");
-                    return;
-                }
-                if(TextUtils.isEmpty(phoneBox.getText().toString())) {
-                    phoneBox.setError("* Required");
-                    return;
-                }
-                if(dialText.equals(passwd)) {
-                    register(email, passwd);
-                    alertDialog.dismiss();
-                }
-                else {
-                    confirmBox.setError("* Passwords don't match");
-                }
+            public void onVerificationCompleted(PhoneAuthCredential phoneAuthCredential) {
+                Toast.makeText(getApplicationContext(), "Auto-Captured code", Toast.LENGTH_LONG).show();
+                signIn(phoneAuthCredential);
+//                if(alertDialog!=null)
+                // Set edit text with code
+                alertDialog.dismiss();
             }
-        });
-    }
 
-
-    private void register(String email, String passwd) {
-        auth.signOut();
-        disableBoxes();
-        auth.createUserWithEmailAndPassword(email, passwd).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
+            public void onVerificationFailed(FirebaseException e) {
+                Toast.makeText(getApplicationContext(), e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onCodeSent(final String verificationId, PhoneAuthProvider.ForceResendingToken token) {
                 enableBoxes();
-                if(task.isSuccessful()) {
-                    auth.getCurrentUser().sendEmailVerification().addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            Toast.makeText(getApplicationContext(), "Verification email sent!", Toast.LENGTH_LONG).show();
-                            auth.signOut();
+                Toast.makeText(getApplicationContext(), "Code sent", Toast.LENGTH_SHORT).show();
+                final EditText codeBox=new EditText(getApplicationContext());
+                alertDialog=new AlertDialog.Builder(v.getContext()).setTitle("Enter the x-digit code").setView(codeBox).setCancelable(false)
+                        .setNegativeButton("Cancel", null)
+                        .setPositiveButton("Verify", null).create();
+                alertDialog.show();
+                alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        String code=codeBox.getText().toString();
+                        if(TextUtils.isEmpty(code)) {
+                            codeBox.setError("* Required");
+                            return;
                         }
-                    });
-                }
-                else {
-                    Toast.makeText(getApplicationContext(), task.getException().getMessage(), Toast.LENGTH_LONG).show();
-                }
+                        PhoneAuthCredential credential=PhoneAuthProvider.getCredential(verificationId, code);
+                        signIn(credential);
+                        alertDialog.dismiss();
+                    }
+                });
             }
         });
     }
 
     private void enableBoxes() {
         spinner.setWillNotDraw(true);
-        emailBox.setEnabled(true);
-        pwdBox.setEnabled(true);
+        verify.setEnabled(true);
+        phoneBox.setEnabled(true);
         idBox.setEnabled(true);
     }
 
     private void disableBoxes() {
         spinner.setWillNotDraw(false);
-        emailBox.setEnabled(false);
-        pwdBox.setEnabled(false);
+        verify.setEnabled(false);
+        phoneBox.setEnabled(false);
         idBox.setEnabled(false);
     }
 
 //    private void setBoxes(boolean enable) {   // Using seperate functions instead for potential(maybe?) compiler optimisation(inlining)
-//        emailBox.setEnabled(enable);
+//        phoneBox.setEnabled(enable);
+//        verify.setEnabled(false);
 //        pwdBox.setEnabled(enable);
 //        idBox.setEnabled(enable);
 //    }

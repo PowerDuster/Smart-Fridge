@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">Smart Affix</string>
-    <string name="default_temp">--° F</string>
+    <string name="default_temp">--° C</string>
     <string name="default_humid">-- %</string>
     <string name="default_lid">--N/A--</string>
 

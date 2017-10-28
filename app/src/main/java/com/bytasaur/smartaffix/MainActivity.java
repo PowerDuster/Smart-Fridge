@@ -9,15 +9,12 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,31 +23,29 @@ import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingClient;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseException;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity implements ValueEventListener {
     private ArrayList<Geofence> locationsOfInterest = new ArrayList<>();
     private PendingIntent pendingIntent;
-    private MonitorFragment instance1;
-    private GridFragment instance2;
-    private DepletedItemsFragment instance3;
+    private MonitorFragment monitorFragment;  // Move instantiation here to avoid potential null* at onRestart?
+    public static String device=null;
     public HashMap<String, FridgeItem> itemHashMap=new HashMap<>();
     HashMap<String, Integer> imageResIds = new HashMap<>();
     ArrayList<FridgeItem> list = new ArrayList<>();
+    ArrayList<FridgeItem> list2 = new ArrayList<>();
     public static ArrayAdapter<FridgeItem> adapter;
     public static ArrayAdapter<FridgeItem> adapter2;
     private String[] titles = {"Inventory", "Monitor", "Restock"};
@@ -70,29 +65,64 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
                 return;
             }
             Integer i = imageResIds.get(tmp);
-            if (i == null) {    // getValue may return null
-                adapter.add(new FridgeItem(tmp, dataSnapshot.getValue(Integer.class), R.drawable.def));
-//                adapter2.add(new FridgeItem(tmp, dataSnapshot.getValue(Integer.class), R.drawable.def));
+            try {
+                if (i == null) {
+                    FridgeItem item = new FridgeItem(tmp, dataSnapshot.getValue(Integer.class), R.drawable.def);
+                    adapter.add(item);
+                    adapter.notifyDataSetChanged();
+                    if (item.count == 0) {
+                        adapter2.add(item);
+                        adapter2.notifyDataSetChanged();
+                    }
+                }
+                else {
+                    FridgeItem item = new FridgeItem(tmp, dataSnapshot.getValue(Integer.class), i);
+                    adapter.add(item);
+                    adapter.notifyDataSetChanged();
+                    if (item.count == 0) {
+                        adapter2.add(item);
+                        adapter2.notifyDataSetChanged();
+                    }
+                }
+//                if (item.count == 0) {
+//                    adapter2.add(item);
+//                    adapter2.notifyDataSetChanged();
+//                }
             }
-            else {
-                adapter.add(new FridgeItem(tmp, dataSnapshot.getValue(Integer.class), i));
-//                adapter2.add(new FridgeItem(tmp, dataSnapshot.getValue(Integer.class), i));
+            catch(DatabaseException ex) {
+                //
             }
-            adapter.notifyDataSetChanged();
-//            adapter2.notifyDataSetChanged();
         }
 
         @Override
         public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-            itemHashMap.get(dataSnapshot.getKey()).count=dataSnapshot.getValue(Integer.class);
-            adapter.notifyDataSetChanged();
-//            adapter2.notifyDataSetChanged();
+            try {
+//                itemHashMap.get(dataSnapshot.getKey()).count=dataSnapshot.getValue(Integer.class);
+//                adapter.notifyDataSetChanged();
+                Integer c=dataSnapshot.getValue(Integer.class);
+                FridgeItem item=itemHashMap.get(dataSnapshot.getKey());
+                int oldC=item.count;
+                item.count=c;
+                adapter.notifyDataSetChanged();
+                if(c==0||oldC==0) { // &&(c!=oldC)
+                    if(oldC>c) {
+                        adapter2.add(item);
+                        adapter2.notifyDataSetChanged();
+                    }
+                    else if(c>oldC) {
+                        adapter2.remove(itemHashMap.get(dataSnapshot.getKey()));
+                    }
+                }
+            }
+            catch(DatabaseException ex) {
+                //
+            }
         }
 
         @Override
         public void onChildRemoved(DataSnapshot dataSnapshot) {
             adapter.remove(itemHashMap.get(dataSnapshot.getKey()));
-//            adapter2.remove(itemHashMap.get(dataSnapshot.getKey()));
+            adapter2.remove(itemHashMap.get(dataSnapshot.getKey()));
             itemHashMap.remove(dataSnapshot.getKey());
         }
 
@@ -111,16 +141,25 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        FirebaseDatabase db = FirebaseDatabase.getInstance();
+        if(device==null||FirebaseAuth.getInstance().getCurrentUser()==null) {
+            startActivity(new Intent(this, SigninActivity.class));
+            finish();
+            return;
+        }
+        ref = db.getReference(device);
         imageResIds.put("Eggs", R.drawable.egg);
         imageResIds.put("Milk", R.drawable.milksmall);
         imageResIds.put("Water Bottles", R.drawable.water);
         imageResIds.put("Oranges", R.drawable.orangesmall);
+
         adapter = new ArrayAdapter<FridgeItem>(this, R.layout.item_view, list) {
             @Override
             @NonNull
             public View getView(int position, View convertView, @NonNull ViewGroup parent) {
                 if (convertView == null) {
-                    convertView = getLayoutInflater().inflate(R.layout.item_view, null, false);
+                    convertView = getLayoutInflater().inflate(R.layout.item_view, parent, false);
                 }
                 FridgeItem item = list.get(position);
                 ((ImageView) convertView.findViewById(R.id.item_image)).setImageResource(item.resId);
@@ -131,14 +170,14 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
             }
         };
 
-        adapter2=new ArrayAdapter<FridgeItem>(this, R.layout.depleted_item_view, list) {
+        adapter2=new ArrayAdapter<FridgeItem>(this, R.layout.depleted_item_view, list2) {
             @Override
             @NonNull
             public View getView(int position, View convertView, @NonNull ViewGroup parent) {
                 if (convertView == null) {
                     convertView = getLayoutInflater().inflate(R.layout.depleted_item_view, null, false);
                 }
-                FridgeItem item = list.get(position);
+                FridgeItem item = list2.get(position);
                 ((ImageView) convertView.findViewById(R.id.depleted_image)).setImageResource(item.resId);
                 ((TextView) convertView.findViewById(R.id.depleted_label)).setText(item.name);
                 ((TextView) convertView.findViewById(R.id.depleted_value)).setText(item.count +"");
@@ -147,9 +186,6 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
         };
 
         ((ViewPager)findViewById(R.id.pager)).setAdapter(new MyPagerAdapter(getSupportFragmentManager()));
-
-        FirebaseDatabase db = FirebaseDatabase.getInstance();
-        ref = db.getReference(getIntent().getStringExtra("devid"));
 
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             setGeofences();
@@ -164,20 +200,24 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
         String key=dataSnapshot.getKey();
         switch (key) {
             case "Temperature":
-                instance1.temperatureView.setText(dataSnapshot.getValue(Long.class) + "° F");
+                monitorFragment.temperatureView.setText(dataSnapshot.getValue() + "° C");
                 return;
             case "DoorState": {
-                Integer tmp = dataSnapshot.getValue(Integer.class);
-                if (tmp == null || tmp > 1 || tmp < 0) {
-                    return;
+                try {
+                    Integer tmp = dataSnapshot.getValue(Integer.class);
+                    if (tmp == null || tmp > 1 || tmp < 0) {
+                        return;
+                    }
+                    monitorFragment.doorStateView.setTextColor(colors[tmp]);
+                    monitorFragment.doorStateView.setText(states[tmp]);
                 }
-                instance1.doorStateView.setTextColor(colors[tmp]);
-                instance1.doorStateView.setText(states[tmp]);
+                catch(DatabaseException ex) {
+                    //
+                }
                 return;
             }
             case "Humidity": {
-                Integer tmp = dataSnapshot.getValue(Integer.class);
-                instance1.humidityView.setText(tmp + "%");
+                monitorFragment.humidityView.setText(dataSnapshot.getValue() + "%");
                 break;
             }
         }
@@ -266,58 +306,6 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
             startActivity(new Intent(this, SigninActivity.class));
             finish();
         }
-        else if(item.getItemId()==R.id.reset) {
-            final AlertDialog alertDialog=new AlertDialog.Builder(this).setTitle("Reset password").setView(R.layout.pwdreset_dialog)
-                    .setPositiveButton("Reset", null).setNegativeButton("Cancel", null).create();
-            alertDialog.show(); // Slight chance of completing show before ClickListener is overridden, don't matter
-            final EditText currentBox=(EditText) alertDialog.getWindow().findViewById(R.id.old_pwd);
-            final EditText newBox=(EditText)alertDialog.getWindow().findViewById(R.id.new1);
-            final EditText new2Box=(EditText)alertDialog.getWindow().findViewById(R.id.new2);
-            alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                String current=currentBox.getText().toString();
-                if(TextUtils.isEmpty(current)) {
-                    currentBox.setError("* Required");
-                    return;
-                }
-                    final String tmp=newBox.getText().toString();
-                    if(TextUtils.isEmpty(tmp)) {
-                        newBox.setError("* Required");
-                        return;
-                    }
-                    if(tmp.length()<6) {
-                        newBox.setError("* Use at least 6 characters");
-                        return;
-                    }
-                    String tmp2=new2Box.getText().toString();
-                    if(TextUtils.isEmpty(tmp2)) {
-                        new2Box.setError("* Required");
-                        return;
-                    }
-                    if(tmp.equals(tmp2)) {
-                        FirebaseUser u=FirebaseAuth.getInstance().getCurrentUser();
-                        if(u!=null) {
-                            u.updatePassword(tmp).addOnCompleteListener(new OnCompleteListener<Void>() {
-                                @Override
-                                public void onComplete(@NonNull Task<Void> task) {
-                                    Toast.makeText(getApplicationContext(), "Password updated!", Toast.LENGTH_LONG).show();
-                                }
-                            }).addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    Toast.makeText(getApplicationContext(), e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-                                }
-                            });
-                        }
-                        alertDialog.dismiss();
-                    }
-                    else {
-                        new2Box.setError("* Passwords don't match");
-                    }
-                }
-            });
-        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -328,26 +316,24 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
 
         @Override
         public int getCount() {
-            return 2;
+            return 3;
         }
 
-        // Returns the fragment to display for a particular page.
         @Override
         public android.support.v4.app.Fragment getItem(int position) {
             switch (position) {
                 case 0:
-                    instance2 = new GridFragment();
                     ref.child("Stock").addChildEventListener(itemChangeListener);
-                    return instance2;
+                    return new GridFragment();
+            // monitorFragment gets wiped after >2 swipes(dist) <- to be considered if it goes to page 0 or 2
                 case 1:
-                    instance1 = new MonitorFragment();
+                    monitorFragment = new MonitorFragment();
                     ref.child("DoorState").addValueEventListener(MainActivity.this);
                     ref.child("Temperature").addValueEventListener(MainActivity.this);   // Save key strings in an array maybe
                     ref.child("Humidity").addValueEventListener(MainActivity.this);
-                    return instance1;
+                    return monitorFragment;
                 case 2:
-                    instance3=new DepletedItemsFragment();
-                    return instance3;
+                    return new DepletedItemsFragment();
                 default:
                     return null;
             }
