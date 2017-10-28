@@ -3,7 +3,4 @@
     <string name="default_temp">--° C</string>
     <string name="default_humid">-- %</string>
     <string name="default_lid">--N/A--</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
