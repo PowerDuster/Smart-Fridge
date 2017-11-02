@@ -72,7 +72,8 @@
             android:layout_height="wrap_content" />
         <TextView
             android:id="@+id/door_state_view"
-            android:ems="3"
+            android:layout_marginStart="10dp"
+            android:maxLines="1"
             android:textAppearance="@style/TextAppearance.AppCompat.Display1"
             android:textColor="#000"
             android:textAlignment="center"

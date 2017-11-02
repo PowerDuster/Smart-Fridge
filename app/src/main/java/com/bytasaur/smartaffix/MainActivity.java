@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -218,7 +219,23 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
             }
             case "Humidity": {
                 monitorFragment.humidityView.setText(dataSnapshot.getValue() + "%");
-                break;
+                return;
+            }
+            case "connected": {
+                if(dataSnapshot.getValue(Boolean.class)) {
+                    ref.child("Temperature").removeEventListener(this);
+                    ref.child("Humidity").removeEventListener(this);
+                    ref.child("DoorState").removeEventListener(this);
+                    ref.child("DoorState").addValueEventListener(this); //  Multiple adds increase list size while adding the pointer to the same listener
+                    ref.child("Temperature").addValueEventListener(this);
+                    ref.child("Humidity").addValueEventListener(this);
+                }
+                else {
+                    monitorFragment.temperatureView.setText(R.string.default_temp);
+                    monitorFragment.doorStateView.setTextColor(Color.BLACK);
+                    monitorFragment.doorStateView.setText(R.string.default_lid);
+                    monitorFragment.humidityView.setText(R.string.default_humid);
+                }
             }
         }
     }
@@ -263,9 +280,10 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
 
     @Override
     protected void onRestart() {
-        ref.child("Temperature").addValueEventListener(this);   // Save key strings in an array maybe
-        ref.child("Humidity").addValueEventListener(this);
+//        ref.child("Temperature").addValueEventListener(this);   // Save key strings in an array maybe
+//        ref.child("Humidity").addValueEventListener(this);
         ref.child("Stock").addChildEventListener(itemChangeListener);
+        FirebaseDatabase.getInstance().getReference(".info/connected").addValueEventListener(this);
         super.onRestart();
     }
 
@@ -275,6 +293,7 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
         ref.child("Humidity").removeEventListener(this);
 //        ref.child("Temperature").removeEventListener((ValueEventListener) this);
         ref.child("Stock").removeEventListener(itemChangeListener);
+        FirebaseDatabase.getInstance().getReference(".info/connected").removeEventListener(this);
         super.onStop();
     }
 
@@ -328,9 +347,10 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
             // monitorFragment gets wiped after >2 swipes(dist) <- to be considered if it goes to page 0 or 2
                 case 1:
                     monitorFragment = new MonitorFragment();
-                    ref.child("DoorState").addValueEventListener(MainActivity.this);
-                    ref.child("Temperature").addValueEventListener(MainActivity.this);   // Save key strings in an array maybe
-                    ref.child("Humidity").addValueEventListener(MainActivity.this);
+//                    ref.child("DoorState").addValueEventListener(MainActivity.this);
+//                    ref.child("Temperature").addValueEventListener(MainActivity.this);   // Save key strings in an array maybe
+//                    ref.child("Humidity").addValueEventListener(MainActivity.this);
+                    FirebaseDatabase.getInstance().getReference(".info/connected").addValueEventListener(MainActivity.this);
                     return monitorFragment;
                 case 2:
                     return new DepletedItemsFragment();
