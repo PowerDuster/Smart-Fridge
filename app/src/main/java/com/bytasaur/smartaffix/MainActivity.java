@@ -19,6 +19,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+//import android.support.des
 
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingClient;
@@ -222,15 +223,17 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
                 return;
             }
             case "connected": {
+                Toast.makeText(this, dataSnapshot.getValue().toString(), Toast.LENGTH_LONG).show();
                 if(dataSnapshot.getValue(Boolean.class)) {
-                    ref.child("Temperature").removeEventListener(this);
-                    ref.child("Humidity").removeEventListener(this);
-                    ref.child("DoorState").removeEventListener(this);
                     ref.child("DoorState").addValueEventListener(this); //  Multiple adds increase list size while adding the pointer to the same listener
                     ref.child("Temperature").addValueEventListener(this);
                     ref.child("Humidity").addValueEventListener(this);
                 }
                 else {
+//                    Snackbar snackbar;
+                    ref.child("DoorState").removeEventListener(this);
+                    ref.child("Temperature").removeEventListener(this);
+                    ref.child("Humidity").removeEventListener(this);
                     monitorFragment.temperatureView.setText(R.string.default_temp);
                     monitorFragment.doorStateView.setTextColor(Color.BLACK);
                     monitorFragment.doorStateView.setText(R.string.default_lid);
@@ -241,7 +244,26 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
     }
 
     @Override
-    public void onCancelled(DatabaseError databaseError) {
+    public void onCancelled(DatabaseError databaseError) {}
+
+    @Override
+    protected void onRestart() {
+//        ref.child("Temperature").addValueEventListener(this);   // Save key strings in an array maybe
+//        ref.child("Humidity").addValueEventListener(this);
+
+        ref.child("Stock").addChildEventListener(itemChangeListener);
+        FirebaseDatabase.getInstance().getReference(".info/connected").addValueEventListener(this);
+        super.onRestart();
+    }
+
+    @Override
+    protected void onStop() {
+//        ref.child("Temperature").removeEventListener(this);
+//        ref.child("Humidity").removeEventListener(this);
+
+        ref.child("Stock").removeEventListener(itemChangeListener);
+        FirebaseDatabase.getInstance().getReference(".info/connected").removeEventListener(this);
+        super.onStop();
     }
 
     @Override
@@ -276,25 +298,6 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
 //                Toast.makeText(getApplicationContext(), "Geofences NOT set", Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    @Override
-    protected void onRestart() {
-//        ref.child("Temperature").addValueEventListener(this);   // Save key strings in an array maybe
-//        ref.child("Humidity").addValueEventListener(this);
-        ref.child("Stock").addChildEventListener(itemChangeListener);
-        FirebaseDatabase.getInstance().getReference(".info/connected").addValueEventListener(this);
-        super.onRestart();
-    }
-
-    @Override
-    protected void onStop() {
-        ref.child("Temperature").removeEventListener(this);
-        ref.child("Humidity").removeEventListener(this);
-//        ref.child("Temperature").removeEventListener((ValueEventListener) this);
-        ref.child("Stock").removeEventListener(itemChangeListener);
-        FirebaseDatabase.getInstance().getReference(".info/connected").removeEventListener(this);
-        super.onStop();
     }
 
     private GeofencingRequest getGeofencingRequest() {
@@ -337,6 +340,8 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
         public int getCount() {
             return 3;
         }
+
+
 
         @Override
         public android.support.v4.app.Fragment getItem(int position) {

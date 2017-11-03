@@ -150,7 +150,6 @@ public class SigninActivity extends AppCompatActivity {
     }
 
     public void verify(final View v) {
-        disableBoxes();
         if(TextUtils.isEmpty(idBox.getText().toString())) {
             idBox.setError("* Required");
             return;
@@ -163,6 +162,7 @@ public class SigninActivity extends AppCompatActivity {
             return;
         }
         getPreferences(0).edit().putString("p_id", phone).apply();
+        disableBoxes();
         PhoneAuthProvider.getInstance().verifyPhoneNumber(phone, 60, TimeUnit.SECONDS, this, new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
             AlertDialog alertDialog;
             @Override
