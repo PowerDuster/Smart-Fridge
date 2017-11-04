@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
@@ -14,7 +15,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -41,13 +41,14 @@ public class SigninActivity extends AppCompatActivity {
     private String deviceId;
     private ProgressBar spinner;
     private DatabaseReference reference;
+    private Snackbar snackbar;
     private Handler handler=new Handler();
     private Runnable runnable=new Runnable() {
         @Override
         public void run() {
             reference.removeEventListener(checkId);
             enableBoxes();
-            Toast.makeText(getApplicationContext(), "Timed Out!", Toast.LENGTH_SHORT).show();
+            snackbar.setText("Timed Out!").setDuration(Snackbar.LENGTH_SHORT).show();
             handler.removeCallbacks(runnable);
         }
     };
@@ -55,7 +56,7 @@ public class SigninActivity extends AppCompatActivity {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
             if(dataSnapshot.exists()) {
-                Toast.makeText(getApplicationContext(), "Signed in to "+deviceId, Toast.LENGTH_SHORT).show();
+                snackbar.setText("Signed in!").setDuration(Snackbar.LENGTH_SHORT).show();
                 handler.removeCallbacks(runnable);
                 MainActivity.device=deviceId;
                 startActivity(new Intent(getApplicationContext(), MainActivity.class));
@@ -63,15 +64,14 @@ public class SigninActivity extends AppCompatActivity {
             }
             else {
                 auth.signOut();
-                Toast.makeText(getApplicationContext(), deviceId+" not found", Toast.LENGTH_LONG).show();
+                snackbar.setText(deviceId+" not reachable").setDuration(Snackbar.LENGTH_LONG).show();
                 handler.removeCallbacks(runnable);
                 enableBoxes();
             }
         }
         @Override
         public void onCancelled(DatabaseError databaseError) {
-//                Toast.makeText(getApplicationContext(), databaseError.getMessage(), Toast.LENGTH_SHORT).show();
-            Toast.makeText(getApplicationContext(), "Database Error", Toast.LENGTH_SHORT).show();
+            snackbar.setText("Database Error").setDuration(Snackbar.LENGTH_SHORT).show();
             handler.removeCallbacks(runnable);
             enableBoxes();
         }
@@ -85,6 +85,7 @@ public class SigninActivity extends AppCompatActivity {
 
         spinner=(ProgressBar)findViewById(R.id.loadingSpinner);
         spinner.setWillNotDraw(true);
+        snackbar=Snackbar.make(spinner, "", Snackbar.LENGTH_INDEFINITE);
 
         auth=FirebaseAuth.getInstance();
         FirebaseUser tmp=auth.getCurrentUser();
@@ -126,7 +127,7 @@ public class SigninActivity extends AppCompatActivity {
     }
 
     private void goToMain() {
-        Toast.makeText(getApplicationContext(), "Checking connection with "+deviceId+"...", Toast.LENGTH_SHORT).show(); // Considering replacing Toasts with Snackbars
+        snackbar.setText("Checking connection with "+deviceId+"...").show();
         reference=FirebaseDatabase.getInstance().getReference(deviceId);
         reference.addListenerForSingleValueEvent(checkId);
         handler.postDelayed(runnable, 13000);
@@ -138,12 +139,11 @@ public class SigninActivity extends AppCompatActivity {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if(task.isSuccessful()) {
-                    //Toast.makeText(getApplicationContext(), FirebaseAuth.getInstance().getCurrentUser().getPhoneNumber(), Toast.LENGTH_LONG).show();
                     goToMain();
                 }
                 else {
                     enableBoxes();
-                    Toast.makeText(getApplicationContext(), task.getException().getLocalizedMessage(), Toast.LENGTH_LONG).show();
+                    snackbar.setText("Unable to reach host").setDuration(Snackbar.LENGTH_SHORT).show();
                 }
             }
         });
@@ -165,26 +165,28 @@ public class SigninActivity extends AppCompatActivity {
         disableBoxes();
         PhoneAuthProvider.getInstance().verifyPhoneNumber(phone, 60, TimeUnit.SECONDS, this, new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
             AlertDialog alertDialog;
+            EditText codeBox;
             @Override
             public void onVerificationCompleted(PhoneAuthCredential phoneAuthCredential) {
-                Toast.makeText(getApplicationContext(), "Auto-Captured code", Toast.LENGTH_LONG).show();
+                snackbar.setText("Auto-Captured code").setDuration(Snackbar.LENGTH_LONG).show();
                 signIn(phoneAuthCredential);
 //                if(alertDialog!=null)
-                // Set edit text with code
+//                codeBox.setText(phoneAuthCredential.getSmsCode());
+//                codeBox.setEnabled(false);
                 alertDialog.dismiss();
             }
 
             @Override
             public void onVerificationFailed(FirebaseException e) {
                 enableBoxes();
-                Toast.makeText(getApplicationContext(), e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+                snackbar.setText("Verification failed").setDuration(Snackbar.LENGTH_SHORT).show();
             }
 
             @Override
             public void onCodeSent(final String verificationId, PhoneAuthProvider.ForceResendingToken token) {
                 enableBoxes();
-                Toast.makeText(getApplicationContext(), "Code sent", Toast.LENGTH_SHORT).show();
-                final EditText codeBox=new EditText(getApplicationContext());
+                snackbar.setText("Code sent").setDuration(Snackbar.LENGTH_SHORT).show();
+                codeBox=new EditText(getApplicationContext());
                 alertDialog=new AlertDialog.Builder(v.getContext()).setTitle("Enter the x-digit code").setView(codeBox).setCancelable(false)
                         .setNegativeButton("Cancel", null)
                         .setPositiveButton("Verify", null).create();

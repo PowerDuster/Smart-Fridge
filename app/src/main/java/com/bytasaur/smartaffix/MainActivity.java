@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -18,8 +19,6 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
-//import android.support.des
 
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingClient;
@@ -57,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
 
     private int colors[] = {0xFF303F9F, 0xffcc0000};  // @color/colorPrimaryDark 0xFF303F9F
     private String states[] = {"Closed", "Open"};
+    private Snackbar snackbar;
 
     ChildEventListener itemChangeListener = new ChildEventListener() {
         @Override
@@ -189,6 +189,8 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
 
         ((ViewPager)findViewById(R.id.pager)).setAdapter(new MyPagerAdapter(getSupportFragmentManager()));
 
+        snackbar = Snackbar.make(findViewById(R.id.coordinator), "Device Offline", Snackbar.LENGTH_INDEFINITE);
+
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             setGeofences();
         }
@@ -223,14 +225,15 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
                 return;
             }
             case "connected": {
-                Toast.makeText(this, dataSnapshot.getValue().toString(), Toast.LENGTH_LONG).show();
+//                Toast.makeText(this, dataSnapshot.getValue().toString(), Toast.LENGTH_LONG).show();
                 if(dataSnapshot.getValue(Boolean.class)) {
+                    snackbar.dismiss();
                     ref.child("DoorState").addValueEventListener(this); //  Multiple adds increase list size while adding the pointer to the same listener
                     ref.child("Temperature").addValueEventListener(this);
                     ref.child("Humidity").addValueEventListener(this);
                 }
                 else {
-//                    Snackbar snackbar;
+                    snackbar.show();
                     ref.child("DoorState").removeEventListener(this);
                     ref.child("Temperature").removeEventListener(this);
                     ref.child("Humidity").removeEventListener(this);
@@ -272,9 +275,9 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 setGeofences();
             }
-            else {
-                Toast.makeText(this, "App requires permission for location-based reminders", Toast.LENGTH_LONG).show();
-            }
+//            else {
+//                snackbar.setText("App requires permission for location-based reminders").setDuration(Snackbar.LENGTH_LONG).show();
+//            }
         }
     }
 
@@ -340,8 +343,6 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
         public int getCount() {
             return 3;
         }
-
-
 
         @Override
         public android.support.v4.app.Fragment getItem(int position) {
