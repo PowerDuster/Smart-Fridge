@@ -1,6 +1,7 @@
 package com.bytasaur.smartaffix;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -139,6 +140,7 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
         }
     };
 
+    @SuppressLint("SetTextI18n")    // Everyone knows English STFU
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -177,7 +179,7 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
             @NonNull
             public View getView(int position, View convertView, @NonNull ViewGroup parent) {
                 if (convertView == null) {
-                    convertView = getLayoutInflater().inflate(R.layout.depleted_item_view, null, false);
+                    convertView = getLayoutInflater().inflate(R.layout.depleted_item_view, parent, false);
                 }
                 FridgeItem item = list2.get(position);
                 ((ImageView) convertView.findViewById(R.id.depleted_image)).setImageResource(item.resId);
@@ -199,6 +201,7 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
         }
     }
 
+    @SuppressLint("SetTextI18n")    // Everyone knows English STFU
     @Override
     public void onDataChange(DataSnapshot dataSnapshot) {
         String key=dataSnapshot.getKey();
