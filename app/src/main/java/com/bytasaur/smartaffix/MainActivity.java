@@ -39,6 +39,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+@SuppressLint("SetTextI18n")
 public class MainActivity extends AppCompatActivity implements ValueEventListener {
     private ArrayList<Geofence> locationsOfInterest = new ArrayList<>();
     private PendingIntent pendingIntent;
@@ -140,7 +141,6 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
         }
     };
 
-    @SuppressLint("SetTextI18n")    // Everyone knows English STFU
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -201,7 +201,6 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
         }
     }
 
-    @SuppressLint("SetTextI18n")    // Everyone knows English STFU
     @Override
     public void onDataChange(DataSnapshot dataSnapshot) {
         String key=dataSnapshot.getKey();
