@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
     private Snackbar snackbar;
 
     ChildEventListener itemChangeListener = new ChildEventListener() {
+        @SuppressWarnings("ConstantConditions")
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
             String tmp = dataSnapshot.getKey();
@@ -93,11 +94,12 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
 //                    adapter2.notifyDataSetChanged();
 //                }
             }
-            catch(DatabaseException ex) {
+            catch(Exception ex) {
                 //
             }
         }
 
+        @SuppressWarnings("ConstantConditions")
         @Override
         public void onChildChanged(DataSnapshot dataSnapshot, String s) {
             try {
@@ -118,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
                     }
                 }
             }
-            catch(DatabaseException ex) {
+            catch(Exception ex) {
                 //
             }
         }
@@ -201,6 +203,7 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
         }
     }
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     public void onDataChange(DataSnapshot dataSnapshot) {
         String key=dataSnapshot.getKey();
