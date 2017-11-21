@@ -83,15 +83,15 @@ public class SigninActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signin);
 
-        spinner=(ProgressBar)findViewById(R.id.loadingSpinner);
+        spinner=findViewById(R.id.loadingSpinner);
         spinner.setWillNotDraw(true);
         snackbar=Snackbar.make(spinner, "", Snackbar.LENGTH_INDEFINITE);
 
         auth=FirebaseAuth.getInstance();
         FirebaseUser tmp=auth.getCurrentUser();
         deviceId=getPreferences(0).getString("d_id", null);
-        idBox =(EditText)findViewById(R.id.id_box);
-        phoneBox =(EditText)findViewById(R.id.phone_box);
+        idBox = findViewById(R.id.id_box);
+        phoneBox = findViewById(R.id.phone_box);
         phoneBox.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
@@ -102,7 +102,7 @@ public class SigninActivity extends AppCompatActivity {
                 return false;
             }
         });
-        verify=(Button)findViewById(R.id.btn_verify);
+        verify=findViewById(R.id.btn_verify);
 
         if(tmp!=null) {
             if(deviceId!=null) {
