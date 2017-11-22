@@ -8,49 +8,18 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:232093510324:android:53d0c861ba3db221",
+        "mobilesdk_app_id": "1:232093510324:android:630b6e1aee6f4093",
         "android_client_info": {
-          "package_name": "com.smartaffix.smartfridge"
+          "package_name": "com.bytasaur.smartfridge"
         }
       },
       "oauth_client": [
         {
-          "client_id": "232093510324-s70no9ugh8khrss7aqi3r85ggl322so1.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyCKFGfwbtv1r6m5kI5QEePaq3V4osMmunA"
-        }
-      ],
-      "services": {
-        "analytics_service": {
-          "status": 1
-        },
-        "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
-        },
-        "ads_service": {
-          "status": 2
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:232093510324:android:f44239d36d6be6f1",
-        "android_client_info": {
-          "package_name": "com.bytasaur.smartaffix"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "232093510324-r96gtugdtsletd3isqslgjq7vnqu25gl.apps.googleusercontent.com",
+          "client_id": "232093510324-09danb5lsv1fdaqp3vkt5serkn0imkv7.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.bytasaur.smartaffix",
-            "certificate_hash": "cd57f7a4b08a2ef6728f3180235ba5022c56babf"
+            "package_name": "com.bytasaur.smartfridge",
+            "certificate_hash": "f02a537395253d227779d326fe81035ad3c251d9"
           }
         },
         {
