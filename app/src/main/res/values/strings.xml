@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Smart Fridge</string>
+    <string name="app_name">Smart Fridge </string>
     <string name="default_temp">--° C</string>
     <string name="default_humid">-- %</string>
     <string name="default_lid">--N/A--</string>
