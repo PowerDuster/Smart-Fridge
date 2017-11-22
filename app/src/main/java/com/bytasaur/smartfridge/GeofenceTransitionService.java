@@ -45,7 +45,9 @@ public class GeofenceTransitionService extends IntentService {
                     .setContentIntent(PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT)).setAutoCancel(true).setVibrate(new long[]{400, 100, 30, 100});
 
             NotificationManager notificationManager=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);
-            notificationManager.notify(0, notificationBuilder.build());
+            if (notificationManager != null) {
+                notificationManager.notify(0, notificationBuilder.build());
+            }
             // TBD: remove notification with id on click
 
             //System.out.println("You've entered: "+lst);

@@ -2,6 +2,7 @@ package com.bytasaur.smartfridge;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -11,6 +12,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -59,6 +61,9 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
     private int colors[] = {0xFF303F9F, 0xffcc0000};  // @color/colorPrimaryDark 0xFF303F9F
     private String states[] = {"Closed", "Open"};
     private Snackbar snackbar;
+    private NotificationCompat.Builder notificationBuilder=new NotificationCompat.Builder(this)
+            .setSmallIcon(R.drawable.common_full_open_on_phone).setAutoCancel(true).setVibrate(new long[]{400, 100, 30, 100});
+    private NotificationManager notificationManager;
 
     ChildEventListener itemChangeListener = new ChildEventListener() {
         @SuppressWarnings("ConstantConditions")
@@ -78,6 +83,10 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
                     if (item.count <= item.threshold) {
                         adapter2.add(item);
                         adapter2.notifyDataSetChanged();
+                        notificationBuilder.setContentTitle(tmp).setContentText(item.count+"");
+                        if (notificationManager != null) {
+                            notificationManager.notify(tmp.hashCode(), notificationBuilder.build());
+                        }
                     }
                 }
                 else {
@@ -87,6 +96,10 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
                     if (item.count <= item.threshold) {
                         adapter2.add(item);
                         adapter2.notifyDataSetChanged();
+                        notificationBuilder.setContentTitle(tmp).setContentText(item.count+"");
+                        if (notificationManager != null) {
+                            notificationManager.notify(tmp.hashCode(), notificationBuilder.build());
+                        }
                     }
                 }
 //                if (item.count == 0) {
@@ -112,12 +125,21 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
                 if(c<=thresh&&oldC>item.threshold) {
                     adapter2.add(item);
                     adapter2.notifyDataSetChanged();
+                    notificationBuilder.setContentTitle(item.name).setContentText(item.count+"");
+                    if (notificationManager != null) {
+                        notificationManager.notify(item.name.hashCode(), notificationBuilder.build());
+                    }
                 }
                 else if(oldC<=item.threshold&&c>thresh) {
                     adapter2.remove(itemHashMap.get(dataSnapshot.getKey()));
+                    notificationManager.cancel(item.name.hashCode());
                 }
                 else {  // if(c!=oldC)
                     adapter2.notifyDataSetChanged();
+                    notificationBuilder.setContentTitle(item.name).setContentText(item.count+"");
+                    if (notificationManager != null) {
+                        notificationManager.notify(item.name.hashCode(), notificationBuilder.build());
+                    }
                 }
                 item.threshold=thresh;
             }
@@ -160,6 +182,10 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
         imageResIds.put("Milk", R.drawable.milksmall);
         imageResIds.put("Water Bottles", R.drawable.water);
         imageResIds.put("Oranges", R.drawable.orangesmall);
+
+//        notificationBuilder=new NotificationCompat.Builder(this)
+//                .setSmallIcon(R.drawable.common_full_open_on_phone).setAutoCancel(true).setVibrate(new long[]{400, 100, 30, 100});
+        notificationManager=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 
         adapter = new ArrayAdapter<FridgeItem>(this, R.layout.item_view, list) {
             @Override
