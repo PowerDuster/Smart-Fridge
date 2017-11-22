@@ -1,35 +1,27 @@
 {
   "project_info": {
-    "project_number": "49525592190",
-    "firebase_url": "https://smart-fridge-d9f3d.firebaseio.com",
-    "project_id": "smart-fridge-d9f3d",
-    "storage_bucket": "smart-fridge-d9f3d.appspot.com"
+    "project_number": "232093510324",
+    "firebase_url": "https://smart-affix-refrigerator.firebaseio.com",
+    "project_id": "smart-affix-refrigerator",
+    "storage_bucket": "smart-affix-refrigerator.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:49525592190:android:58a626c7e9f0d08a",
+        "mobilesdk_app_id": "1:232093510324:android:53d0c861ba3db221",
         "android_client_info": {
-          "package_name": "com.bytasaur.grocerdroid"
+          "package_name": "com.smartaffix.smartfridge"
         }
       },
       "oauth_client": [
         {
-          "client_id": "49525592190-p54m69giij2s3j5qq3cp2g2kvp3hsc1v.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.bytasaur.grocerdroid",
-            "certificate_hash": "f02a537395253d227779d326fe81035ad3c251d9"
-          }
-        },
-        {
-          "client_id": "49525592190-pc2hd0al5uhgkcvv924r86848lh9s7cp.apps.googleusercontent.com",
+          "client_id": "232093510324-s70no9ugh8khrss7aqi3r85ggl322so1.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyB-eoQrfLUxihm25TI6w5l9wgENQJfdQ3k"
+          "current_key": "AIzaSyCKFGfwbtv1r6m5kI5QEePaq3V4osMmunA"
         }
       ],
       "services": {
@@ -37,13 +29,8 @@
           "status": 1
         },
         "appinvite_service": {
-          "status": 2,
-          "other_platform_oauth_client": [
-            {
-              "client_id": "49525592190-pc2hd0al5uhgkcvv924r86848lh9s7cp.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "status": 1,
+          "other_platform_oauth_client": []
         },
         "ads_service": {
           "status": 2
@@ -52,28 +39,28 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:49525592190:android:f44239d36d6be6f1",
+        "mobilesdk_app_id": "1:232093510324:android:f44239d36d6be6f1",
         "android_client_info": {
           "package_name": "com.bytasaur.smartaffix"
         }
       },
       "oauth_client": [
         {
-          "client_id": "49525592190-eksnsp4v48v7tcd1agidjfajud80vo5g.apps.googleusercontent.com",
+          "client_id": "232093510324-r96gtugdtsletd3isqslgjq7vnqu25gl.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.bytasaur.smartaffix",
-            "certificate_hash": "f02a537395253d227779d326fe81035ad3c251d9"
+            "certificate_hash": "cd57f7a4b08a2ef6728f3180235ba5022c56babf"
           }
         },
         {
-          "client_id": "49525592190-pc2hd0al5uhgkcvv924r86848lh9s7cp.apps.googleusercontent.com",
+          "client_id": "232093510324-s70no9ugh8khrss7aqi3r85ggl322so1.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyB-eoQrfLUxihm25TI6w5l9wgENQJfdQ3k"
+          "current_key": "AIzaSyCKFGfwbtv1r6m5kI5QEePaq3V4osMmunA"
         }
       ],
       "services": {
@@ -84,7 +71,7 @@
           "status": 2,
           "other_platform_oauth_client": [
             {
-              "client_id": "49525592190-pc2hd0al5uhgkcvv924r86848lh9s7cp.apps.googleusercontent.com",
+              "client_id": "232093510324-s70no9ugh8khrss7aqi3r85ggl322so1.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
