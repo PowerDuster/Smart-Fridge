@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
                     if (item.count <= item.threshold) {
                         adapter2.add(item);
                         adapter2.notifyDataSetChanged();
-                        notificationBuilder.setContentTitle(tmp).setContentText(item.count+"");
+                        notificationBuilder.setContentTitle(item.name+" about to finish").setContentText("Qty: "+item.count);
                         if (notificationManager != null) {
                             notificationManager.notify(tmp.hashCode(), notificationBuilder.build());
                         }
@@ -96,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
                     if (item.count <= item.threshold) {
                         adapter2.add(item);
                         adapter2.notifyDataSetChanged();
-                        notificationBuilder.setContentTitle(tmp).setContentText(item.count+"");
+                        notificationBuilder.setContentTitle(item.name+" about to finish").setContentText("Qty: "+item.count);
                         if (notificationManager != null) {
                             notificationManager.notify(tmp.hashCode(), notificationBuilder.build());
                         }
@@ -125,7 +125,7 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
                 if(c<=thresh&&oldC>item.threshold) {
                     adapter2.add(item);
                     adapter2.notifyDataSetChanged();
-                    notificationBuilder.setContentTitle(item.name).setContentText(item.count+"");
+                    notificationBuilder.setContentTitle(item.name+" about to finish").setContentText("Qty: "+item.count);
                     if (notificationManager != null) {
                         notificationManager.notify(item.name.hashCode(), notificationBuilder.build());
                     }
@@ -136,7 +136,7 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
                 }
                 else {  // if(c!=oldC)
                     adapter2.notifyDataSetChanged();
-                    notificationBuilder.setContentTitle(item.name).setContentText(item.count+"");
+                    notificationBuilder.setContentTitle(item.name+" about to finish").setContentText("Qty: "+item.count);
                     if (notificationManager != null) {
                         notificationManager.notify(item.name.hashCode(), notificationBuilder.build());
                     }
@@ -280,26 +280,6 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
 
     @Override
     public void onCancelled(DatabaseError databaseError) {}
-
-    @Override
-    protected void onRestart() {
-//        ref.child("Temperature").addValueEventListener(this);   // Save key strings in an array maybe
-//        ref.child("Humidity").addValueEventListener(this);
-
-        ref.child("Stock").addChildEventListener(itemChangeListener);
-        FirebaseDatabase.getInstance().getReference(".info/connected").addValueEventListener(this);
-        super.onRestart();
-    }
-
-    @Override
-    protected void onStop() {
-//        ref.child("Temperature").removeEventListener(this);
-//        ref.child("Humidity").removeEventListener(this);
-
-        ref.child("Stock").removeEventListener(itemChangeListener);
-        FirebaseDatabase.getInstance().getReference(".info/connected").removeEventListener(this);
-        super.onStop();
-    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
