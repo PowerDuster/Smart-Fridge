@@ -108,12 +108,13 @@ public class SigninActivity extends AppCompatActivity {
         if(tmp!=null) {
             if(deviceId!=null) {
                 idBox.setText(deviceId);
+                phoneBox.setText(tmp.getPhoneNumber());
                 disableBoxes();
                 goToMain();
             }
             else {
-                auth.signOut();
                 phoneBox.setText(tmp.getPhoneNumber());
+                auth.signOut();
             }
         }
         else {
@@ -180,6 +181,9 @@ public class SigninActivity extends AppCompatActivity {
             @Override
             public void onVerificationFailed(FirebaseException e) {
                 enableBoxes();
+                System.out.println("======================================");
+                e.printStackTrace();
+                System.out.println("======================================");
                 snackbar.setText("Verification failed").setDuration(Snackbar.LENGTH_SHORT).show();
             }
 

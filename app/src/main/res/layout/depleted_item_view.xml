@@ -24,6 +24,7 @@
     <TextView
         android:id="@+id/depleted_value"
         android:layout_toEndOf="@id/depleted_label"
+        android:textColor="#aa0000"
         android:layout_marginEnd="15dp"
         android:layout_alignParentEnd="true"
         android:textAlignment="textEnd"

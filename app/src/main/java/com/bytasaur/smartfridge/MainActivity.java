@@ -46,6 +46,7 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
     private ArrayList<Geofence> locationsOfInterest = new ArrayList<>();
     private PendingIntent pendingIntent;
     private MonitorFragment monitorFragment;  // Move instantiation here to avoid potential null* at onRestart?
+    public static boolean nearStore=false;
     public static String device=null;
     public HashMap<String, FridgeItem> itemHashMap=new HashMap<>();
     HashMap<String, Integer> imageResIds = new HashMap<>();
@@ -76,14 +77,14 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
             }
             Integer i = imageResIds.get(tmp);
             try {
-                if (i == null) {
+                if (i == null) {    //default threshold to 0 ??
                     FridgeItem item = new FridgeItem(tmp, dataSnapshot.child("Amount").getValue(Integer.class), R.drawable.def, dataSnapshot.child("Threshold").getValue(Integer.class));
                     adapter.add(item);
                     adapter.notifyDataSetChanged();
                     if (item.count <= item.threshold) {
                         adapter2.add(item);
                         adapter2.notifyDataSetChanged();
-                        notificationBuilder.setContentTitle(item.name+" about to finish").setContentText("Qty: "+item.count);
+                        notificationBuilder.setContentTitle(item.name+" about to finish").setContentText("Current Qty: "+item.count);
                         if (notificationManager != null) {
                             notificationManager.notify(tmp.hashCode(), notificationBuilder.build());
                         }
@@ -96,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
                     if (item.count <= item.threshold) {
                         adapter2.add(item);
                         adapter2.notifyDataSetChanged();
-                        notificationBuilder.setContentTitle(item.name+" about to finish").setContentText("Qty: "+item.count);
+                        notificationBuilder.setContentTitle(item.name+" about to finish").setContentText("Current Qty: "+item.count);
                         if (notificationManager != null) {
                             notificationManager.notify(tmp.hashCode(), notificationBuilder.build());
                         }
@@ -219,6 +220,9 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
         };
 
         ((ViewPager)findViewById(R.id.pager)).setAdapter(new MyPagerAdapter(getSupportFragmentManager()));
+        if(nearStore) {
+            ((ViewPager)findViewById(R.id.pager)).setCurrentItem(2, true);
+        }
 
         snackbar = Snackbar.make(findViewById(R.id.coordinator), "Device Offline", Snackbar.LENGTH_INDEFINITE);
 

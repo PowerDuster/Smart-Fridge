@@ -1,16 +1,13 @@
 package com.bytasaur.smartfridge;
 
-import android.app.ActivityManager;
 import android.app.IntentService;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.TaskStackBuilder;
-import android.widget.Toast;
+
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
-import java.util.List;
 
 /**
  * An {@link IntentService} subclass for handling asynchronous task requests in
@@ -37,12 +34,14 @@ public class GeofenceTransitionService extends IntentService {
             final Intent notificationIntent=new Intent(this, MainActivity.class);
             notificationIntent.addCategory(Intent.CATEGORY_LAUNCHER);
             notificationIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            MainActivity.nearStore=true;
 
 //            stackBuilder.addNextIntent(new Intent(this, MainActivity.class).setAction(Intent.ACTION_MAIN)
 //                    .addCategory(Intent.CATEGORY_LAUNCHER).addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT|Intent.FLAG_ACTIVITY_SINGLE_TOP));
             NotificationCompat.Builder notificationBuilder=new NotificationCompat.Builder(this).setSmallIcon(R.drawable.common_full_open_on_phone)
                     .setContentTitle(getString(R.string.app_name)).setContentText(event.getTriggeringGeofences().get(0).getRequestId())
-                    .setContentIntent(PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT)).setAutoCancel(true).setVibrate(new long[]{400, 100, 30, 100});
+                    .setContentIntent(PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT))
+                    .setAutoCancel(true).setVibrate(new long[]{400, 100, 30, 100});
 
             NotificationManager notificationManager=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);
             if (notificationManager != null) {

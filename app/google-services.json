@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "232093510324-08mma1kg1gjknvf9qq4j71ghmiv0ec09.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.bytasaur.smartfridge",
+            "certificate_hash": "cd57f7a4b08a2ef6728f3180235ba5022c56babf"
+          }
+        },
+        {
           "client_id": "232093510324-09danb5lsv1fdaqp3vkt5serkn0imkv7.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
