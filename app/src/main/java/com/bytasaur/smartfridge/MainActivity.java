@@ -2,8 +2,10 @@ package com.bytasaur.smartfridge;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -19,8 +21,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.NumberPicker;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import com.google.android.gms.location.Geofence;
@@ -166,6 +171,66 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
 
         }
     };
+
+    public static AdapterView.OnItemLongClickListener listener=new AdapterView.OnItemLongClickListener() {
+        @Override
+        public boolean onItemLongClick(AdapterView<?> adapterView, final View view, int i, long l) {
+            PopupMenu popup = new PopupMenu(view.getContext(), view);
+            final String label=((TextView)view.findViewById(R.id.item_label)).getText().toString();
+            popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem menuItem) {
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
+                    final NumberPicker numberPicker = new NumberPicker(view.getContext());
+                    numberPicker.setMinValue(0);
+                    numberPicker.setMaxValue(100);
+                    builder.setTitle("Value").setView(numberPicker).setPositiveButton("Set", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            ref.child("Stock").child(label).child("Threshold").setValue(numberPicker.getValue());
+                        }
+                    }).setNegativeButton("Cancel", null);
+                    (builder.create()).show();
+                    return true;
+                }
+            });
+            popup.getMenuInflater().inflate(R.menu.menu_item, popup.getMenu());
+            popup.getMenu().getItem(0).setTitle("Set threshold for "+label+"...");
+            popup.show();
+            return true;
+        }
+    };
+    /*
+    public static AdapterView.OnItemClickListener listener=new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> adapterView, final View view, int i, long l) {
+            PopupMenu popup = new PopupMenu(view.getContext(), view);
+            final String label=((TextView)view.findViewById(R.id.item_label)).getText().toString();
+            popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem menuItem) {
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
+                    final NumberPicker numberPicker = new NumberPicker(view.getContext());
+                    numberPicker.setMinValue(0);
+                    numberPicker.setMaxValue(100);
+                    builder.setTitle("Value").setView(numberPicker).setPositiveButton("Set", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            ref.child("Stock").child(label).child("Threshold").setValue(numberPicker.getValue());
+                        }
+                    }).setNegativeButton("Cancel", null);
+                    (builder.create()).show();
+                    return true;
+                }
+            });
+            popup.getMenuInflater().inflate(R.menu.menu_item, popup.getMenu());
+            popup.getMenu().getItem(0).setTitle("Set threshold for "+label+"...");
+            popup.show();
+        }
+    };
+     */
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
