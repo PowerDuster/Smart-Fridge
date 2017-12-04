@@ -293,7 +293,7 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
         ref.child("Stock").addChildEventListener(itemChangeListener);
         FirebaseDatabase.getInstance().getReference(".info/connected").addValueEventListener(MainActivity.this);
     }
-    
+
     @SuppressWarnings("ConstantConditions")
     @Override
     public void onDataChange(DataSnapshot dataSnapshot) {
