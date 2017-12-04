@@ -38,7 +38,7 @@ public class GeofenceTransitionService extends IntentService {
 
 //            stackBuilder.addNextIntent(new Intent(this, MainActivity.class).setAction(Intent.ACTION_MAIN)
 //                    .addCategory(Intent.CATEGORY_LAUNCHER).addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT|Intent.FLAG_ACTIVITY_SINGLE_TOP));
-            NotificationCompat.Builder notificationBuilder=new NotificationCompat.Builder(this).setSmallIcon(R.drawable.common_full_open_on_phone)
+            NotificationCompat.Builder notificationBuilder=new NotificationCompat.Builder(this, "").setSmallIcon(R.drawable.common_full_open_on_phone)
                     .setContentTitle(getString(R.string.app_name)).setContentText(event.getTriggeringGeofences().get(0).getRequestId())
                     .setContentIntent(PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT))
                     .setAutoCancel(true).setVibrate(new long[]{400, 100, 30, 100});
