@@ -33,7 +33,6 @@ import com.google.android.gms.location.GeofencingClient;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -122,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
     private String[] titles = {"Inventory", "Monitor", "Restock"};
     private String states[] = {"Closed", "Open"};
     private Snackbar snackbar;
-    private NotificationCompat.Builder notificationBuilder=new NotificationCompat.Builder(this)
+    private NotificationCompat.Builder notificationBuilder=new NotificationCompat.Builder(this, "Items")
             .setSmallIcon(R.drawable.common_full_open_on_phone).setAutoCancel(true).setVibrate(new long[]{400, 100, 30, 100});
     private NotificationManager notificationManager;
     private ChildEventListener itemChangeListener = new ChildEventListener() {
@@ -280,10 +279,6 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
 
         snackbar = Snackbar.make(findViewById(R.id.coordinator), "Device Offline", Snackbar.LENGTH_INDEFINITE);
 
-        if(nearStore) {
-            ((ViewPager)findViewById(R.id.pager)).setCurrentItem(2, true);
-        }
-
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             setGeofences();
         }
@@ -292,6 +287,14 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
         }
         ref.child("Stock").addChildEventListener(itemChangeListener);
         FirebaseDatabase.getInstance().getReference(".info/connected").addValueEventListener(MainActivity.this);
+    }
+
+    @Override
+    public void onResume() {
+        if(nearStore) {
+            ((ViewPager)findViewById(R.id.pager)).setCurrentItem(2, true);
+        }
+        super.onResume();
     }
 
     @SuppressWarnings("ConstantConditions")
