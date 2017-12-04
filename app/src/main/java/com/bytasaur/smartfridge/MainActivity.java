@@ -27,12 +27,14 @@ import android.widget.ImageView;
 import android.widget.NumberPicker;
 import android.widget.PopupMenu;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingClient;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnFailureListener;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -296,6 +298,19 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
         }
         super.onResume();
     }
+    boolean var=false;
+    @Override
+    public void onBackPressed() {
+        if(var) {
+            FirebaseAuth.getInstance().signOut();
+            startActivity(new Intent(this, SigninActivity.class));
+            finish();
+        }
+        else {
+            Toast.makeText(this, "Press back again to sign out", Toast.LENGTH_SHORT).show();
+            var=true;
+        }
+    }
 
     @SuppressWarnings("ConstantConditions")
     @Override
@@ -382,21 +397,6 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
 //                Toast.makeText(getApplicationContext(), "Geofences NOT set", Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if(item.getItemId()==R.id.signout) {
-            FirebaseAuth.getInstance().signOut();
-            startActivity(new Intent(this, SigninActivity.class));
-            finish();
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     private class MyPagerAdapter extends FragmentPagerAdapter {
