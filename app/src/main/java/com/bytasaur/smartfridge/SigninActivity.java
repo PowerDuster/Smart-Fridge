@@ -56,7 +56,7 @@ public class SigninActivity extends AppCompatActivity {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
             if(dataSnapshot.exists()) {
-                snackbar.setText("Signed in!").setDuration(Snackbar.LENGTH_SHORT).show();
+                snackbar.setText("Signed in").setDuration(Snackbar.LENGTH_SHORT).show();
                 handler.removeCallbacks(runnable);
                 reference.child(auth.getCurrentUser().getUid()).setValue(auth.getCurrentUser().getPhoneNumber());
                 MainActivity.device=deviceId;

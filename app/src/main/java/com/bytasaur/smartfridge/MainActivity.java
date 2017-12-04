@@ -48,30 +48,84 @@ import java.util.HashMap;
 
 @SuppressLint("SetTextI18n")
 public class MainActivity extends AppCompatActivity implements ValueEventListener {
+    public static String device=null;
+    public static ArrayAdapter<FridgeItem> adapter;
+    public static ArrayAdapter<FridgeItem> adapter2;
+    public static DatabaseReference ref;
+    public static boolean nearStore=false;
+    public static AdapterView.OnItemLongClickListener listener=new AdapterView.OnItemLongClickListener() {
+        @Override
+        public boolean onItemLongClick(AdapterView<?> adapterView, final View view, int i, long l) {
+            PopupMenu popup = new PopupMenu(view.getContext(), view);
+            final String label=((TextView)view.findViewById(R.id.item_label)).getText().toString();
+            popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem menuItem) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
+                    final NumberPicker numberPicker = new NumberPicker(view.getContext());
+                    numberPicker.setMinValue(0);
+                    numberPicker.setMaxValue(100);
+                    builder.setTitle("Value").setView(numberPicker).setPositiveButton("Set", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            ref.child("Stock").child(label).child("Threshold").setValue(numberPicker.getValue());
+                        }
+                    }).setNegativeButton("Cancel", null);
+                    (builder.create()).show();
+                    return true;
+                }
+            });
+            popup.getMenuInflater().inflate(R.menu.menu_item, popup.getMenu());
+            popup.getMenu().getItem(0).setTitle("Set threshold for "+label+"...");
+            popup.show();
+            return true;
+        }
+    };
+    /*
+    public static AdapterView.OnItemClickListener listener=new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> adapterView, final View view, int i, long l) {
+            PopupMenu popup = new PopupMenu(view.getContext(), view);
+            final String label=((TextView)view.findViewById(R.id.item_label)).getText().toString();
+            popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem menuItem) {
+
+                    AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
+                    final NumberPicker numberPicker = new NumberPicker(view.getContext());
+                    numberPicker.setMinValue(0);
+                    numberPicker.setMaxValue(100);
+                    builder.setTitle("Value").setView(numberPicker).setPositiveButton("Set", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            ref.child("Stock").child(label).child("Threshold").setValue(numberPicker.getValue());
+                        }
+                    }).setNegativeButton("Cancel", null);
+                    (builder.create()).show();
+                    return true;
+                }
+            });
+            popup.getMenuInflater().inflate(R.menu.menu_item, popup.getMenu());
+            popup.getMenu().getItem(0).setTitle("Set threshold for "+label+"...");
+            popup.show();
+        }
+    };
+     */
+    private int colors[] = {0xFF303F9F, 0xffcc0000};  // @color/colorPrimaryDark 0xFF303F9F
     private ArrayList<Geofence> locationsOfInterest = new ArrayList<>();
     private PendingIntent pendingIntent;
     private MonitorFragment monitorFragment;  // Move instantiation here to avoid potential null* at onRestart?
-    public static boolean nearStore=false;
-    public static String device=null;
     public HashMap<String, FridgeItem> itemHashMap=new HashMap<>();
-    HashMap<String, Integer> imageResIds = new HashMap<>();
-    ArrayList<FridgeItem> list = new ArrayList<>();
-    ArrayList<FridgeItem> list2 = new ArrayList<>();
-    public static ArrayAdapter<FridgeItem> adapter;
-    public static ArrayAdapter<FridgeItem> adapter2;
+    private HashMap<String, Integer> imageResIds = new HashMap<>();
+    private ArrayList<FridgeItem> list = new ArrayList<>();
+    private ArrayList<FridgeItem> list2 = new ArrayList<>();
     private String[] titles = {"Inventory", "Monitor", "Restock"};
-    // Add String array for keys
-
-    public static DatabaseReference ref;
-
-    private int colors[] = {0xFF303F9F, 0xffcc0000};  // @color/colorPrimaryDark 0xFF303F9F
     private String states[] = {"Closed", "Open"};
     private Snackbar snackbar;
     private NotificationCompat.Builder notificationBuilder=new NotificationCompat.Builder(this)
             .setSmallIcon(R.drawable.common_full_open_on_phone).setAutoCancel(true).setVibrate(new long[]{400, 100, 30, 100});
     private NotificationManager notificationManager;
-
-    ChildEventListener itemChangeListener = new ChildEventListener() {
+    private ChildEventListener itemChangeListener = new ChildEventListener() {
         @SuppressWarnings("ConstantConditions")
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
@@ -172,85 +226,23 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
         }
     };
 
-    public static AdapterView.OnItemLongClickListener listener=new AdapterView.OnItemLongClickListener() {
-        @Override
-        public boolean onItemLongClick(AdapterView<?> adapterView, final View view, int i, long l) {
-            PopupMenu popup = new PopupMenu(view.getContext(), view);
-            final String label=((TextView)view.findViewById(R.id.item_label)).getText().toString();
-            popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                @Override
-                public boolean onMenuItemClick(MenuItem menuItem) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
-                    final NumberPicker numberPicker = new NumberPicker(view.getContext());
-                    numberPicker.setMinValue(0);
-                    numberPicker.setMaxValue(100);
-                    builder.setTitle("Value").setView(numberPicker).setPositiveButton("Set", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            ref.child("Stock").child(label).child("Threshold").setValue(numberPicker.getValue());
-                        }
-                    }).setNegativeButton("Cancel", null);
-                    (builder.create()).show();
-                    return true;
-                }
-            });
-            popup.getMenuInflater().inflate(R.menu.menu_item, popup.getMenu());
-            popup.getMenu().getItem(0).setTitle("Set threshold for "+label+"...");
-            popup.show();
-            return true;
-        }
-    };
-
-    /*
-    public static AdapterView.OnItemClickListener listener=new AdapterView.OnItemClickListener() {
-        @Override
-        public void onItemClick(AdapterView<?> adapterView, final View view, int i, long l) {
-            PopupMenu popup = new PopupMenu(view.getContext(), view);
-            final String label=((TextView)view.findViewById(R.id.item_label)).getText().toString();
-            popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                @Override
-                public boolean onMenuItemClick(MenuItem menuItem) {
-
-                    AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
-                    final NumberPicker numberPicker = new NumberPicker(view.getContext());
-                    numberPicker.setMinValue(0);
-                    numberPicker.setMaxValue(100);
-                    builder.setTitle("Value").setView(numberPicker).setPositiveButton("Set", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            ref.child("Stock").child(label).child("Threshold").setValue(numberPicker.getValue());
-                        }
-                    }).setNegativeButton("Cancel", null);
-                    (builder.create()).show();
-                    return true;
-                }
-            });
-            popup.getMenuInflater().inflate(R.menu.menu_item, popup.getMenu());
-            popup.getMenu().getItem(0).setTitle("Set threshold for "+label+"...");
-            popup.show();
-        }
-    };
-     */
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        FirebaseDatabase db = FirebaseDatabase.getInstance();
         if(device==null||FirebaseAuth.getInstance().getCurrentUser()==null) {
             startActivity(new Intent(this, SigninActivity.class));
             finish();
             return;
         }
-        ref = db.getReference(device);
+
+        ref = FirebaseDatabase.getInstance().getReference(device);
         imageResIds.put("Eggs", R.drawable.egg);
         imageResIds.put("Milk", R.drawable.milksmall);
         imageResIds.put("Water Bottles", R.drawable.water);
         imageResIds.put("Oranges", R.drawable.orangesmall);
 
-//        notificationBuilder=new NotificationCompat.Builder(this)
-//                .setSmallIcon(R.drawable.common_full_open_on_phone).setAutoCancel(true).setVibrate(new long[]{400, 100, 30, 100});
+        notificationBuilder.setContentIntent(PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT));
         notificationManager=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 
         adapter = new ArrayAdapter<FridgeItem>(this, R.layout.item_view, list) {
@@ -285,11 +277,12 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
         };
 
         ((ViewPager)findViewById(R.id.pager)).setAdapter(new MyPagerAdapter(getSupportFragmentManager()));
+
+        snackbar = Snackbar.make(findViewById(R.id.coordinator), "Device Offline", Snackbar.LENGTH_INDEFINITE);
+
         if(nearStore) {
             ((ViewPager)findViewById(R.id.pager)).setCurrentItem(2, true);
         }
-
-        snackbar = Snackbar.make(findViewById(R.id.coordinator), "Device Offline", Snackbar.LENGTH_INDEFINITE);
 
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             setGeofences();
@@ -297,8 +290,10 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
         else {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 0);
         }
+        ref.child("Stock").addChildEventListener(itemChangeListener);
+        FirebaseDatabase.getInstance().getReference(".info/connected").addValueEventListener(MainActivity.this);
     }
-
+    
     @SuppressWarnings("ConstantConditions")
     @Override
     public void onDataChange(DataSnapshot dataSnapshot) {
@@ -391,7 +386,6 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if(item.getItemId()==R.id.signout) {
@@ -416,15 +410,10 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
         public android.support.v4.app.Fragment getItem(int position) {
             switch (position) {
                 case 0:
-                    ref.child("Stock").addChildEventListener(itemChangeListener);
                     return new GridFragment();
             // monitorFragment gets wiped after >2 swipes(dist) <- to be considered if it goes to page 0 or 2
                 case 1:
                     monitorFragment = new MonitorFragment();
-//                    ref.child("DoorState").addValueEventListener(MainActivity.this);
-//                    ref.child("Temperature").addValueEventListener(MainActivity.this);   // Save key strings in an array maybe
-//                    ref.child("Humidity").addValueEventListener(MainActivity.this);
-                    FirebaseDatabase.getInstance().getReference(".info/connected").addValueEventListener(MainActivity.this);
                     return monitorFragment;
                 case 2:
                     return new DepletedItemsFragment();
