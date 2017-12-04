@@ -9,10 +9,6 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.Toast;
 
-/**
- * Created by ASUS on 9/27/2017.
- */
-
 public class GridFragment extends android.support.v4.app.Fragment {
     Toast toast;
 
