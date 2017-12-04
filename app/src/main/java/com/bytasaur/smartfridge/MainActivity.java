@@ -180,7 +180,6 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
             popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick(MenuItem menuItem) {
-
                     AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
                     final NumberPicker numberPicker = new NumberPicker(view.getContext());
                     numberPicker.setMinValue(0);
@@ -201,6 +200,7 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
             return true;
         }
     };
+
     /*
     public static AdapterView.OnItemClickListener listener=new AdapterView.OnItemClickListener() {
         @Override
@@ -371,32 +371,19 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
         locationsOfInterest.add(new Geofence.Builder().setRequestId("University Parking").setCircularRegion(24.942157, 67.114381, 45).setExpirationDuration(Geofence.NEVER_EXPIRE).setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER).build());
         locationsOfInterest.add(new Geofence.Builder().setRequestId("University Library").setCircularRegion(24.940921, 67.115062, 35).setExpirationDuration(Geofence.NEVER_EXPIRE).setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER).build());
 
-        geofencingClient.addGeofences(getGeofencingRequest(), getGeofencePendingIntent()).addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-//                Toast.makeText(getApplicationContext(), "Geofences set", Toast.LENGTH_SHORT).show();
-            }
-        }).addOnFailureListener(new OnFailureListener() {
+        if(pendingIntent==null) {
+            Intent intent=new Intent(this, GeofenceTransitionService.class);
+            pendingIntent=PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        }
+        GeofencingRequest.Builder builder=new GeofencingRequest.Builder();
+        builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
+        builder.addGeofences(locationsOfInterest);
+        geofencingClient.addGeofences(builder.build(), pendingIntent).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
 //                Toast.makeText(getApplicationContext(), "Geofences NOT set", Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    private GeofencingRequest getGeofencingRequest() {
-        GeofencingRequest.Builder builder=new GeofencingRequest.Builder();
-        builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
-        builder.addGeofences(locationsOfInterest);
-        return builder.build();
-    }
-
-    private PendingIntent getGeofencePendingIntent() {
-        if(pendingIntent==null) {
-            Intent intent=new Intent(this, GeofenceTransitionService.class);
-            pendingIntent=PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        }
-        return pendingIntent;
     }
 
     @Override
