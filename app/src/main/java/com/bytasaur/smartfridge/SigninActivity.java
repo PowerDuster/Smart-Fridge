@@ -181,9 +181,6 @@ public class SigninActivity extends AppCompatActivity {
             @Override
             public void onVerificationFailed(FirebaseException e) {
                 enableBoxes();
-                System.out.println("======================================");
-                e.printStackTrace();
-                System.out.println("======================================");
                 snackbar.setText("Verification failed").setDuration(Snackbar.LENGTH_SHORT).show();
             }
 
