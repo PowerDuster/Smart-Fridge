@@ -25,12 +25,9 @@ public class GeofenceTransitionService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         GeofencingEvent event=GeofencingEvent.fromIntent(intent);
         if(event.hasError()) {
-            //Toast.makeText(getApplicationContext(), "Error: "+event.getErrorCode(), Toast.LENGTH_SHORT).show();
             return;
         }
         if(event.getGeofenceTransition()==Geofence.GEOFENCE_TRANSITION_ENTER) {
-//            TaskStackBuilder stackBuilder=TaskStackBuilder.create(this);
-//            stackBuilder.addParentStack(SigninActivity.class);
             final Intent notificationIntent=new Intent(this, MainActivity.class);
             notificationIntent.addCategory(Intent.CATEGORY_LAUNCHER);
             notificationIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -47,10 +44,6 @@ public class GeofenceTransitionService extends IntentService {
             if (notificationManager != null) {
                 notificationManager.notify(0, notificationBuilder.build());
             }
-            // TBD: remove notification with id on click
-
-            //System.out.println("You've entered: "+lst);
-            //Toast.makeText(getApplicationContext(), "You've entered: "+lst.get(0)+"\nSize: "+lst.size(), Toast.LENGTH_LONG).show();
         }
     }
 }
