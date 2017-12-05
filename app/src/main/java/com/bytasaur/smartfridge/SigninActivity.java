@@ -58,6 +58,7 @@ public class SigninActivity extends AppCompatActivity {
             if(dataSnapshot.exists()) {
                 snackbar.setText("Signed in").setDuration(Snackbar.LENGTH_SHORT).show();
                 handler.removeCallbacks(runnable);
+                //noinspection ConstantConditions
                 reference.child(auth.getCurrentUser().getUid()).setValue(auth.getCurrentUser().getPhoneNumber());
                 MainActivity.device=deviceId;
                 startActivity(new Intent(getApplicationContext(), MainActivity.class));
