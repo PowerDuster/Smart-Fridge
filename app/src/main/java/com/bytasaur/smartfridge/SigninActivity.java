@@ -59,7 +59,7 @@ public class SigninActivity extends AppCompatActivity {
                 snackbar.setText("Signed in").setDuration(Snackbar.LENGTH_SHORT).show();
                 handler.removeCallbacks(runnable);
                 //noinspection ConstantConditions
-                reference.child(auth.getCurrentUser().getUid()).setValue(auth.getCurrentUser().getPhoneNumber());
+                reference.child("PhoneNumbers").child(auth.getCurrentUser().getUid()).setValue(auth.getCurrentUser().getPhoneNumber());
                 MainActivity.device=deviceId;
                 startActivity(new Intent(getApplicationContext(), MainActivity.class));
                 finish();
@@ -133,7 +133,7 @@ public class SigninActivity extends AppCompatActivity {
         snackbar.setText("Checking connection with "+deviceId+"...").show();
         reference=FirebaseDatabase.getInstance().getReference(deviceId);
         reference.addListenerForSingleValueEvent(checkId);
-        handler.postDelayed(runnable, 13000);
+        handler.postDelayed(runnable, 16000);
     }
 
     private void signIn(PhoneAuthCredential credential) {

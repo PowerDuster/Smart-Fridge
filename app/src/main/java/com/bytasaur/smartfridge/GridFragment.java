@@ -15,19 +15,7 @@ public class GridFragment extends android.support.v4.app.Fragment {
     @Override
     public View onCreateView(@NonNull final LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v=inflater.inflate(R.layout.fragment_grid, container, false);
-        GridView gridView=v.findViewById(R.id.grid);
-        gridView.setAdapter(MainActivity.adapter);
-        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                if(toast!=null) {
-                    toast.cancel();
-                }
-                toast= Toast.makeText(getContext(), "Long press item for menu", Toast.LENGTH_SHORT);
-                toast.show();
-            }
-        });
-        gridView.setOnItemLongClickListener(MainActivity.listener);
+        ((GridView)v.findViewById(R.id.grid)).setAdapter(MainActivity.adapter);
         return v;
     }
 }

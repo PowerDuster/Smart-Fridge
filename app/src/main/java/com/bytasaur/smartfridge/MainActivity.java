@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -17,16 +18,14 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.NumberPicker;
-import android.widget.PopupMenu;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingClient;
@@ -52,65 +51,6 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
     public static ArrayAdapter<FridgeItem> adapter;
     public static ArrayAdapter<FridgeItem> adapter2;
     public static DatabaseReference ref;
-    public static boolean nearStore=false;
-    public static AdapterView.OnItemLongClickListener listener=new AdapterView.OnItemLongClickListener() {
-        @Override
-        public boolean onItemLongClick(AdapterView<?> adapterView, final View view, int i, long l) {
-            PopupMenu popup = new PopupMenu(view.getContext(), view);
-            final String label=((TextView)view.findViewById(R.id.item_label)).getText().toString();
-            popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                @Override
-                public boolean onMenuItemClick(MenuItem menuItem) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
-                    final NumberPicker numberPicker = new NumberPicker(view.getContext());
-                    numberPicker.setMinValue(0);
-                    numberPicker.setMaxValue(100);
-                    builder.setTitle("Value").setView(numberPicker).setPositiveButton("Set", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            ref.child("Stock").child(label).child("Threshold").setValue(numberPicker.getValue());
-                        }
-                    }).setNegativeButton("Cancel", null);
-                    (builder.create()).show();
-                    return true;
-                }
-            });
-            popup.getMenuInflater().inflate(R.menu.menu_item, popup.getMenu());
-            popup.getMenu().getItem(0).setTitle("Set threshold for "+label+"...");
-            popup.show();
-            return true;
-        }
-    };
-    /*
-    public static AdapterView.OnItemClickListener listener=new AdapterView.OnItemClickListener() {
-        @Override
-        public void onItemClick(AdapterView<?> adapterView, final View view, int i, long l) {
-            PopupMenu popup = new PopupMenu(view.getContext(), view);
-            final String label=((TextView)view.findViewById(R.id.item_label)).getText().toString();
-            popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                @Override
-                public boolean onMenuItemClick(MenuItem menuItem) {
-
-                    AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
-                    final NumberPicker numberPicker = new NumberPicker(view.getContext());
-                    numberPicker.setMinValue(0);
-                    numberPicker.setMaxValue(100);
-                    builder.setTitle("Value").setView(numberPicker).setPositiveButton("Set", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            ref.child("Stock").child(label).child("Threshold").setValue(numberPicker.getValue());
-                        }
-                    }).setNegativeButton("Cancel", null);
-                    (builder.create()).show();
-                    return true;
-                }
-            });
-            popup.getMenuInflater().inflate(R.menu.menu_item, popup.getMenu());
-            popup.getMenu().getItem(0).setTitle("Set threshold for "+label+"...");
-            popup.show();
-        }
-    };
-     */
     private int colors[] = {0xFF303F9F, 0xffcc0000};  // @color/colorPrimaryDark 0xFF303F9F
     private ArrayList<Geofence> locationsOfInterest = new ArrayList<>();
     private PendingIntent pendingIntent;
@@ -125,6 +65,17 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
     private NotificationCompat.Builder notificationBuilder=new NotificationCompat.Builder(this, "Items")
             .setSmallIcon(R.drawable.common_full_open_on_phone).setAutoCancel(true).setVibrate(new long[]{400, 100, 30, 100});
     private NotificationManager notificationManager;
+    private Handler handler=new Handler();
+    private Runnable notificationRunnable =new Runnable() {
+        @Override
+        public void run() {
+            NotificationCompat.Builder builder=new NotificationCompat.Builder(getApplicationContext(), "alrm");
+            builder.setContentTitle("Lid").setContentText("Lid has been open for some time")
+                    .setSmallIcon(R.drawable.common_full_open_on_phone).setAutoCancel(true).setVibrate(new long[]{600, 100, 30, 100});
+            notificationManager.notify(-2, builder.build());
+            handler.removeCallbacks(this);
+        }
+    };
     private ChildEventListener itemChangeListener = new ChildEventListener() {
         @SuppressWarnings("ConstantConditions")
         @Override
@@ -148,6 +99,7 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
                             notificationManager.notify(tmp.hashCode(), notificationBuilder.build());
                         }
                     }
+                    itemHashMap.put(item.name, item);
                 }
                 else {
                     FridgeItem item = new FridgeItem(tmp, dataSnapshot.child("Amount").getValue(Integer.class), i, dataSnapshot.child("Threshold").getValue(Integer.class));
@@ -161,6 +113,7 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
                             notificationManager.notify(tmp.hashCode(), notificationBuilder.build());
                         }
                     }
+                    itemHashMap.put(item.name, item);
                 }
 //                if (item.count == 0) {
 //                    adapter2.add(item);
@@ -235,32 +188,74 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
             finish();
             return;
         }
-
         ref = FirebaseDatabase.getInstance().getReference(device);
         imageResIds.put("Eggs", R.drawable.egg);
         imageResIds.put("Milk", R.drawable.milksmall);
-        imageResIds.put("Water Bottles", R.drawable.water);
+        imageResIds.put("Water Bottle", R.drawable.water);
+        imageResIds.put("Green Chilli", R.drawable.chilli);
+        imageResIds.put("Jam", R.drawable.jam);
         imageResIds.put("Oranges", R.drawable.orangesmall);
-
-        notificationBuilder.setContentIntent(PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT));
+        imageResIds.put("Chocolate", R.drawable.choc);
+        imageResIds.put("Apples", R.drawable.apple);
+        imageResIds.put("Mayo", R.drawable.mayo);
+        imageResIds.put("Juice", R.drawable.oj);
+        imageResIds.put("Carrots", R.drawable.carrot);
+        imageResIds.put("Cauliflower", R.drawable.cauli);
+        imageResIds.put("Tomato", R.drawable.tomato);
+        imageResIds.put("Cheese", R.drawable.cheese);
+        imageResIds.put("Butter", R.drawable.butter);
+        imageResIds.put("Raspberry", R.drawable.rasp);
+        imageResIds.put("Ketchup", R.drawable.ketchup);
+        imageResIds.put("Peach", R.drawable.peach);
+        Intent intent=new Intent(this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.putExtra("nClicked", true);
+        notificationBuilder.setContentIntent(PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT));
         notificationManager=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 
         adapter = new ArrayAdapter<FridgeItem>(this, R.layout.item_view, list) {
+            @SuppressLint("StaticFieldLeak")
             @Override
             @NonNull
             public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+                final ViewHolder view;
                 if (convertView == null) {
                     convertView = getLayoutInflater().inflate(R.layout.item_view, parent, false);
+                    view=new ViewHolder();
+                    view.imageView = convertView.findViewById(R.id.item_image);
+                    view.labelView = convertView.findViewById(R.id.item_label);
+                    view.countView = convertView.findViewById(R.id.item_count);
+                    convertView.setTag(view);
                 }
-                FridgeItem item = list.get(position);
-                ((ImageView) convertView.findViewById(R.id.item_image)).setImageResource(item.resId);
-                ((TextView) convertView.findViewById(R.id.item_label)).setText(item.name);
-                ((TextView) convertView.findViewById(R.id.item_count)).setText(item.count +"");
-                itemHashMap.put(item.name, item);
+                else {
+                    view = (ViewHolder)convertView.getTag();
+                }
+                final FridgeItem item = list.get(position);
+                view.labelView.setText(item.name);
+                view.countView.setText(item.count +"");
+                view.imageView.setImageResource(item.resId);
+//                new Thread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        //
+//                    }
+//                }).start();
+//                new AsyncTask<Void, Void, Bitmap>() {       // MEMORY LEAK!!!
+//                    @Override
+//                    protected Bitmap doInBackground(Void... voids) {
+//                        return BitmapFactory.decodeResource(getResources(), item.resId);
+////                        view.imageView.setImageResource(item.resId);
+//                    }
+//
+//                    @Override
+//                    protected void onPostExecute(Bitmap o) {
+////                        cancel(false);
+//                        view.imageView.setImageBitmap(o);
+//                    }
+//                }.execute();
                 return convertView;
             }
         };
-
         adapter2=new ArrayAdapter<FridgeItem>(this, R.layout.depleted_item_view, list2) {
             @Override
             @NonNull
@@ -275,11 +270,8 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
                 return convertView;
             }
         };
-
         ((ViewPager)findViewById(R.id.pager)).setAdapter(new MyPagerAdapter(getSupportFragmentManager()));
-
         snackbar = Snackbar.make(findViewById(R.id.coordinator), "Device Offline", Snackbar.LENGTH_INDEFINITE);
-
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             setGeofences();
         }
@@ -291,24 +283,23 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
     }
 
     @Override
-    public void onResume() {
-        if(nearStore) {
+    protected void onNewIntent(Intent intent) {
+        if(intent.getBooleanExtra("nClicked", false)) {
             ((ViewPager)findViewById(R.id.pager)).setCurrentItem(2, true);
         }
+        super.onNewIntent(intent);
+    }
+
+    @Override
+    public void onResume() {
         super.onResume();
     }
-    boolean var=false;
     @Override
     public void onBackPressed() {
-        if(var) {
-            FirebaseAuth.getInstance().signOut();
-            startActivity(new Intent(this, SigninActivity.class));
-            finish();
-        }
-        else {
-            Toast.makeText(this, "Press back again to sign out", Toast.LENGTH_SHORT).show();
-            var=true;
-        }
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        startActivity(intent);
     }
 
     @SuppressWarnings("ConstantConditions")
@@ -327,6 +318,13 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
                     }
                     monitorFragment.doorStateView.setTextColor(colors[tmp]);
                     monitorFragment.doorStateView.setText(states[tmp]);
+                    if(tmp==1) {
+                        handler.postDelayed(notificationRunnable, 180000);
+                    }
+                    else {
+                        handler.removeCallbacks(notificationRunnable);
+                        notificationManager.cancel(-2);
+                    }
                 }
                 catch(DatabaseException ex) {
                     //
@@ -337,6 +335,25 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
                 monitorFragment.humidityView.setText(dataSnapshot.getValue() + "%");
                 return;
             }
+            case "Alarm": {
+                try {
+                    Integer tmp = dataSnapshot.getValue(Integer.class);
+                    if (tmp == null || tmp > 1 || tmp < 0) {
+                        return;
+                    }
+                    if(tmp==1) {
+                        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "alrm");
+                        builder.setContentTitle("Alarm").setContentText("Smoke/Fire detected")
+                                .setSmallIcon(R.drawable.common_full_open_on_phone).setAutoCancel(true).setVibrate(new long[]{500, 200, 30, 100});
+                        notificationManager.notify(-5, builder.build());
+                    }
+                    else {
+                        notificationManager.cancel(-5);
+                    }
+                }
+                catch(Exception ignored) {}
+                return;
+            }
             case "connected": {
 //                Toast.makeText(this, dataSnapshot.getValue().toString(), Toast.LENGTH_LONG).show();
                 if(dataSnapshot.getValue(Boolean.class)) {
@@ -344,12 +361,14 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
                     ref.child("DoorState").addValueEventListener(this); //  Multiple adds increase list size while adding the pointer to the same listener
                     ref.child("Temperature").addValueEventListener(this);
                     ref.child("Humidity").addValueEventListener(this);
+                    ref.child("Alarm").addValueEventListener(this);
                 }
                 else {
                     snackbar.show();
                     ref.child("DoorState").removeEventListener(this);
                     ref.child("Temperature").removeEventListener(this);
                     ref.child("Humidity").removeEventListener(this);
+                    ref.child("Alarm").removeEventListener(this);
                     monitorFragment.temperatureView.setText(R.string.default_temp);
                     monitorFragment.doorStateView.setTextColor(Color.BLACK);
                     monitorFragment.doorStateView.setText(R.string.default_lid);
@@ -377,12 +396,12 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
     @SuppressWarnings("MissingPermission")
     private void setGeofences() {
         GeofencingClient geofencingClient = LocationServices.getGeofencingClient(this);
-
         locationsOfInterest.add(new Geofence.Builder().setRequestId("Naheed").setCircularRegion(24.877984, 67.068688, 60).setExpirationDuration(Geofence.NEVER_EXPIRE).setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER).build());
         locationsOfInterest.add(new Geofence.Builder().setRequestId("Home").setCircularRegion(24.928692, 67.062211, 30).setExpirationDuration(Geofence.NEVER_EXPIRE).setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER).build());
-        locationsOfInterest.add(new Geofence.Builder().setRequestId("University Parking").setCircularRegion(24.942157, 67.114381, 45).setExpirationDuration(Geofence.NEVER_EXPIRE).setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER).build());
-        locationsOfInterest.add(new Geofence.Builder().setRequestId("University Library").setCircularRegion(24.940921, 67.115062, 35).setExpirationDuration(Geofence.NEVER_EXPIRE).setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER).build());
-
+        locationsOfInterest.add(new Geofence.Builder().setRequestId("IBA Aman Tower").setCircularRegion(24.866967, 67.025715, 26).setExpirationDuration(Geofence.NEVER_EXPIRE).setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER).build());
+        locationsOfInterest.add(new Geofence.Builder().setRequestId("IBA City Campus Parking").setCircularRegion(24.866763, 67.024879, 35).setExpirationDuration(Geofence.NEVER_EXPIRE).setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER).build());
+        locationsOfInterest.add(new Geofence.Builder().setRequestId("IBA Student Center").setCircularRegion(24.940594, 67.112931, 43).setExpirationDuration(Geofence.NEVER_EXPIRE).setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER).build());
+//24.940594, 67.112931
         if(pendingIntent==null) {
             Intent intent=new Intent(this, GeofenceTransitionService.class);
             pendingIntent=PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -396,6 +415,48 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
 //                Toast.makeText(getApplicationContext(), "Geofences NOT set", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if(item.getItemId()==R.id.th) {
+            Object arr[]=itemHashMap.keySet().toArray();
+            final String names[]=new String[arr.length];
+            for(int i=0;i<arr.length;i++) {
+                names[i]=arr[i].toString();
+            }
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle("Item")
+                    .setItems(names, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, final int which) {
+                            AlertDialog.Builder pickerBuild = new AlertDialog.Builder(MainActivity.this);
+                            final NumberPicker numberPicker = new NumberPicker(MainActivity.this);
+                            numberPicker.setMinValue(0);
+                            numberPicker.setMaxValue(100);
+                            pickerBuild.setTitle("Threshold for "+names[which]).setView(numberPicker).setPositiveButton("Set", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    ref.child("Stock").child(names[which]).child("Threshold").setValue(numberPicker.getValue());
+                                }
+                            }).setNegativeButton("Cancel", null);
+                            pickerBuild.create().show();
+                        }
+                    });
+            builder.create().show();
+        }
+        else if(item.getItemId()==R.id.signout) {
+            FirebaseAuth.getInstance().signOut();
+            startActivity(new Intent(this, SigninActivity.class));
+            finish();
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private class MyPagerAdapter extends FragmentPagerAdapter {
@@ -428,6 +489,12 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
         public CharSequence getPageTitle(int position) {
             return titles[position];
         }
+    }
+
+    private static class ViewHolder {
+        ImageView imageView;
+        TextView labelView;
+        TextView countView;
     }
 
     private static class FridgeItem {
