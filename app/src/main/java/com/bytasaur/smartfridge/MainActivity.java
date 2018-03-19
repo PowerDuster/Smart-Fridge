@@ -397,7 +397,6 @@ public class MainActivity extends AppCompatActivity implements ValueEventListene
     private void setGeofences() {
         GeofencingClient geofencingClient = LocationServices.getGeofencingClient(this);
         locationsOfInterest.add(new Geofence.Builder().setRequestId("Naheed").setCircularRegion(24.877984, 67.068688, 60).setExpirationDuration(Geofence.NEVER_EXPIRE).setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER).build());
-        locationsOfInterest.add(new Geofence.Builder().setRequestId("Home").setCircularRegion(24.928692, 67.062211, 30).setExpirationDuration(Geofence.NEVER_EXPIRE).setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER).build());
         locationsOfInterest.add(new Geofence.Builder().setRequestId("IBA Aman Tower").setCircularRegion(24.866967, 67.025715, 26).setExpirationDuration(Geofence.NEVER_EXPIRE).setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER).build());
         locationsOfInterest.add(new Geofence.Builder().setRequestId("IBA City Campus Parking").setCircularRegion(24.866763, 67.024879, 35).setExpirationDuration(Geofence.NEVER_EXPIRE).setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER).build());
         locationsOfInterest.add(new Geofence.Builder().setRequestId("IBA Student Center").setCircularRegion(24.940594, 67.112931, 43).setExpirationDuration(Geofence.NEVER_EXPIRE).setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER).build());
