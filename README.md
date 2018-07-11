@@ -6,4 +6,4 @@
 - Lid state sensor
 - Fridge item detector
 
-Uses Firebase Realtime Database for fast updates and reliable connection.
+There are pre-set geofences on supermarkets that trigger when you're close to them and have an item below its configured thtreshold.
