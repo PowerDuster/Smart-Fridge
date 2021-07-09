@@ -1,4 +1,4 @@
-Note: Really old code, don't use this :)
+Note: Really old code :)
 # Smart Fridge [Paid Project]
 ## An app to monitor a smart fridge armed with multiple sensors.
 ### Namely:
